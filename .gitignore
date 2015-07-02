@@ -1,0 +1,12 @@
+/vendor
+/composer.phar
+/.buildpath
+/.project
+/.settings
+/.idea
+/phpunit.xml
+composer.lock
+*.swp
+*.swo
+*.bak
+*~
