@@ -1,12 +1,12 @@
-/vendor
-/composer.phar
-/out
-/.idea_modules
-/.buildpath
-/.project
-/.settings
-/.idea
+/.idea_modules/
+/vendor/
+/.idea/
+/out/
+.buildpath
+.project
+.settings
 atlassian-ide-plugin.xml
+composer.phar
 composer.lock
 phpunit.xml
 *.swp
@@ -16,3 +16,4 @@ phpunit.xml
 *.iws
 *.iml
 *~
+~*
