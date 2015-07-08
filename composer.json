@@ -6,14 +6,16 @@
     "type":        "library",
     "keywords":    ["cache", "memory", "redis", "memcached"],
     "require": {
-        "php": ">=5.4.0"
+        "php": ">=5.4.0",
+        "symfony/options-resolver": "2.7.*",
+        "predis/predis": "1.0.*"
     },
     "require-dev": {
         "phpunit/phpunit": "4.7.*"
     },
     "autoload": {
         "psr-0": {
-            "": "src/"
+            "EBT\\CacheClient": "src/"
         }
     },
     "minimum-stability": "stable"

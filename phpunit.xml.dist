@@ -15,18 +15,8 @@
 >
 
     <testsuites>
-        <testsuite name="TestBundle Test Suite">
-            <directory>./tests/<TESTS_DIRECTORY></directory>
+        <testsuite name="TestSuite">
+            <directory>./tests</directory>
         </testsuite>
     </testsuites>
-
-    <filter>
-        <whitelist>
-            <directory>./</directory>
-            <exclude>
-                <directory>./tests</directory>
-                <directory>./vendor</directory>
-            </exclude>
-        </whitelist>
-    </filter>
 </phpunit>

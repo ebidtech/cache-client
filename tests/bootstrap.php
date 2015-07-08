@@ -9,4 +9,4 @@ if (!file_exists($file)) {
 
 # Add test classes to the autoloader.
 $loader = require($file);
-$loader->add('<TESTS_DIRECTORY>', __DIR__);
+$loader->add('EBT\CacheClient\Tests', __DIR__);
