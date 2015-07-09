@@ -11,6 +11,7 @@
 
 namespace EBT\CacheClient\Service;
 
+use EBT\CacheClient\Model\ProviderInterface;
 use Predis\ClientInterface;
 
 interface ProviderFactoryServiceInterface
@@ -21,7 +22,7 @@ interface ProviderFactoryServiceInterface
      * @param ClientInterface $client  Predis client.
      * @param array           $options Additional options.
      *
-     * @return ProviderServiceInterface
+     * @return ProviderInterface
      */
     public static function getPredis(ClientInterface $client, array $options = array());
 
@@ -31,7 +32,7 @@ interface ProviderFactoryServiceInterface
      * @param \Memcached $client  Memcached client.
      * @param array      $options Additional options.
      *
-     * @return ProviderServiceInterface
+     * @return ProviderInterface
      */
     public static function getMemcached(\Memcached $client, array $options = array());
 
@@ -40,7 +41,7 @@ interface ProviderFactoryServiceInterface
      *
      * @param array $options Additional options.
      *
-     * @return ProviderServiceInterface
+     * @return ProviderInterface
      */
     public static function getMemory(array $options = array());
 }

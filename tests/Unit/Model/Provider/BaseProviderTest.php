@@ -15,6 +15,10 @@ use EBT\CacheClient\Model\Provider\BaseProvider;
 use EBT\CacheClient\Model\ProviderInterface;
 use EBT\CacheClient\Tests\Unit\BaseUnitTestCase;
 
+/**
+ * @group unit
+ * @group unit-provider
+ */
 class BaseProviderTest extends BaseUnitTestCase
 {
     /**

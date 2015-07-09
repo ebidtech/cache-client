@@ -51,7 +51,9 @@ class MemoryProvider extends BaseProvider
         }
 
         return new CacheResponse(
-            $this->unpackData($info[self::KEY_VALUE]), true);
+            $this->unpackData($info[self::KEY_VALUE]),
+            true
+        );
     }
 
     /**
@@ -60,8 +62,10 @@ class MemoryProvider extends BaseProvider
     public function set($key, $value, $expiration = null, array $options = array())
     {
         $this->collectGarbage();
+
+        /* Serializing data to make this as close as possible to the other storage providers. */
         $this->memory[$this->getKey($key, $options)] = array(
-            self::KEY_VALUE => $value,
+            self::KEY_VALUE => $this->packData($value),
             self::KEY_TTL => $this->getExpirationTimestamp($expiration)
         );
 
@@ -74,7 +78,30 @@ class MemoryProvider extends BaseProvider
      */
     public function increment($key, $increment = 1, $initialValue = 0, $expiration = null, array $options = array())
     {
-        // TODO: Implement increment() method.
+        /* Retrieve the value. */
+        $newKey = $this->getKey($key, $options);
+        $info = $this->getKeyInfo($newKey);
+
+        /* Key does not exist, create is as usual. */
+        if (empty($info)) {
+
+            return $this->set($key, $increment + $initialValue, $expiration, $options);
+        }
+
+        /* The key exists, so let's try to increment (only for integer values). */
+        $value = $this->unpackData($info[self::KEY_VALUE]);
+
+        if (! is_int($value)) {
+
+            /* This one also represents an operation failure. */
+            return new CacheResponse(false, false);
+        }
+
+        /* Everything looks good, increment the value, store it and return the new value. */
+        $value += $increment;
+        $this->memory[$newKey][self::KEY_VALUE] = $this->packData($value);
+
+        return new CacheResponse($value, true);
     }
 
     /**
@@ -82,7 +109,12 @@ class MemoryProvider extends BaseProvider
      */
     public function lock($key, $owner = null, $expiration = null, array $options = array())
     {
-        // TODO: Implement lock() method.
+        $info = $this->getKeyInfo($this->getKey($key, $options));
+
+        /* We can set the lock if it doesn't exist. */
+        return empty($info)
+            ? $this->set($key, $owner, $expiration, $options)
+            : new CacheResponse(false, true);
     }
 
     /**
@@ -90,7 +122,12 @@ class MemoryProvider extends BaseProvider
      */
     public function lockExists($key, array $options = array())
     {
-        // TODO: Implement lockExists() method.
+        $info = $this->getKeyInfo($this->getKey($key, $options));
+
+        /* No motives for this to fail. */
+        return empty($info)
+            ? new CacheResponse(false, true)
+            : new CacheResponse(true, true);
     }
 
     /**
@@ -98,7 +135,19 @@ class MemoryProvider extends BaseProvider
      */
     public function delete($key, array $options = array())
     {
-        // TODO: Implement delete() method.
+        $key = $this->getKey($key, $options);
+        $info = $this->getKeyInfo($key);
+
+        /* The given key did not exist, this is a failure. */
+        if (empty($info)) {
+
+            return new CacheResponse(false, false);
+        }
+
+        /* Everything looks good, delete the key. */
+        unset($this->memory[$key]);
+
+        return new CacheResponse(true, true);
     }
 
     /**
@@ -106,7 +155,7 @@ class MemoryProvider extends BaseProvider
      */
     public function flush($namespace)
     {
-        // TODO: Implement flush() method.
+        return $this->delete($namespace);
     }
 
     /**
