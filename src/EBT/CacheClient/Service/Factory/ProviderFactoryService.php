@@ -28,11 +28,6 @@ class ProviderFactoryService implements ProviderFactoryServiceInterface
     {
         /* Instantiate the provider service. */
         $provider = new PredisProvider($client);
-
-        /* Validate client options. */
-        $optionsResolver = new OptionsResolver();
-        $provider->configureProviderOptions($optionsResolver);
-        $options = self::resolveOptions($optionsResolver, $options, 'Predis');
         $provider->setProviderOptions($options);
 
         return $provider;
@@ -45,11 +40,6 @@ class ProviderFactoryService implements ProviderFactoryServiceInterface
     {
         /* Instantiate the provider service. */
         $provider = new MemcachedProvider($client);
-
-        /* Validate client options. */
-        $optionsResolver = new OptionsResolver();
-        $provider->configureProviderOptions($optionsResolver);
-        $options = self::resolveOptions($optionsResolver, $options, 'Memcached');
         $provider->setProviderOptions($options);
 
         return $provider;
@@ -62,39 +52,8 @@ class ProviderFactoryService implements ProviderFactoryServiceInterface
     {
         /* Instantiate the provider service. */
         $provider = new MemoryProvider();
-
-        /* Validate client options. */
-        $optionsResolver = new OptionsResolver();
-        $provider->configureProviderOptions($optionsResolver);
-        $options = self::resolveOptions($optionsResolver, $options, 'Memory');
         $provider->setProviderOptions($options);
 
         return $provider;
-    }
-
-    /**
-     * Resolves and validates a set of options.
-     *
-     * @param OptionsResolver $optionsResolver
-     * @param array           $options
-     * @param string          $providerName
-     *
-     * @returns array An array containing the resolved and validated options.
-     */
-    protected static function resolveOptions(OptionsResolver $optionsResolver, array $options, $providerName)
-    {
-        try {
-            $options = $optionsResolver->resolve($options);
-        } catch (\Exception $e) {
-            throw new InvalidArgumentException(
-                sprintf(
-                    'Invalid configuration for cache provider "%s": %s',
-                    $providerName,
-                    $e->getMessage()
-                )
-            );
-        }
-
-        return $options;
     }
 }

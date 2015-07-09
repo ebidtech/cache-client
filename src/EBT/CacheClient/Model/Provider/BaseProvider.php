@@ -11,6 +11,7 @@
 
 namespace EBT\CacheClient\Model\Provider;
 
+use EBT\CacheClient\Exception\InvalidArgumentException;
 use EBT\CacheClient\Model\ProviderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -25,22 +26,6 @@ abstract class BaseProvider implements ProviderInterface
      * @var string
      */
     protected $separator = '';
-
-    /**
-     * Sets the default prefix and separator for the provider.
-     *
-     * @param array $options Provider configuration options.
-     */
-    public function setProviderOptions(array $options)
-    {
-        /* Set key prefix and separator. */
-        $this->separator = empty($options[ProviderInterface::PROVIDER_OPT_SEPARATOR])
-            ? ''
-            : $options[ProviderInterface::PROVIDER_OPT_SEPARATOR];
-        $this->prefix = empty($options[ProviderInterface::PROVIDER_OPT_PREFIX])
-            ? ''
-            : $options[ProviderInterface::PROVIDER_OPT_PREFIX] . $this->separator;
-    }
 
     /**
      * Configures provider specific options.
@@ -59,6 +44,61 @@ abstract class BaseProvider implements ProviderInterface
         $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_PREFIX, 'string');
         $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_SEPARATOR, 'string');
     }
+
+    /**
+     * Sets the default prefix and separator for the provider.
+     *
+     * @param array $options Provider configuration options.
+     */
+    public function setProviderOptions(array $options)
+    {
+        /* Validate options. */
+        $optionsResolver = new OptionsResolver();
+        $this->configureProviderOptions($optionsResolver);
+        $this->resolveOptions($optionsResolver, $options);
+
+        /* Set key prefix and separator. */
+        $this->separator = empty($options[ProviderInterface::PROVIDER_OPT_SEPARATOR])
+            ? ''
+            : $options[ProviderInterface::PROVIDER_OPT_SEPARATOR];
+        $this->prefix = empty($options[ProviderInterface::PROVIDER_OPT_PREFIX])
+            ? ''
+            : $options[ProviderInterface::PROVIDER_OPT_PREFIX] . $this->separator;
+    }
+
+    /**
+     * Resolves and validates a set of options.
+     *
+     * @param OptionsResolver $optionsResolver
+     * @param array           $options
+     *
+     * @returns array An array containing the resolved and validated options.
+     *
+     * @throws InvalidArgumentException
+     */
+    protected function resolveOptions(OptionsResolver $optionsResolver, array $options)
+    {
+        try {
+            $options = $optionsResolver->resolve($options);
+        } catch (\Exception $e) {
+            throw new InvalidArgumentException(
+                sprintf(
+                    'Invalid configuration for cache provider "%s": %s',
+                    $this->getProviderName(),
+                    $e->getMessage()
+                )
+            );
+        }
+
+        return $options;
+    }
+
+    /**
+     * Returns the name of the provider.
+     *
+     * @return string
+     */
+    protected abstract function getProviderName();
 
     /**
      * Generate a composite key based on the prefix and namespace (if one is defined).

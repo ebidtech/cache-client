@@ -16,6 +16,11 @@ use EBT\CacheClient\Entity\CacheResponse;
 class MemcachedProvider extends BaseProvider
 {
     /**
+     * @const string
+     */
+    const PROVIDER_NAME = 'Memcached';
+
+    /**
      * @var \Memcached
      */
     protected $client;
@@ -143,6 +148,14 @@ class MemcachedProvider extends BaseProvider
     public function flush($namespace)
     {
         return $this->delete($namespace);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getProviderName()
+    {
+        return self::PROVIDER_NAME;
     }
 
     /**

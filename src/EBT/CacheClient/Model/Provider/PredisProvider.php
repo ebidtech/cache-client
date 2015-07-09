@@ -18,6 +18,11 @@ use Predis\Response\Status;
 class PredisProvider extends BaseProvider
 {
     /**
+     * @const string
+     */
+    const PROVIDER_NAME = 'Predis';
+
+    /**
      * @var ClientInterface
      */
     protected $client;
@@ -69,7 +74,8 @@ class PredisProvider extends BaseProvider
      */
     public function increment($key, $increment = 1, $initialValue = 0, $expiration = null, array $options = array())
     {
-        $key = $this->getKey($key, $options);
+        //@TODO
+        //$key = $this->getKey($key, $options);
     }
 
     /**
@@ -80,13 +86,19 @@ class PredisProvider extends BaseProvider
         $key = $this->getKey($key, $options);
         $value = $this->packData($owner);
 
-        //@TODO
-        /* Use the correct form of the method. */
-        $result = is_int($expiration) && 1 <= $expiration
-            ? $this->client->set($key, $value, 'ex', $expiration, 'nx')
-            : $this->client->setnx($key, $value, null, null, 'nx');
+        /* Call set when dealing with expiration. */
+        if (is_int($expiration) && 1 <= $expiration) {
+            $result = $this->client->set($key, $value, 'ex', $expiration, 'nx');
 
-        return new CacheResponse($this->isSuccess($result), $this->isSuccess($result));
+            /* There's really no "failure" state here, errors are masked by the client. */
+            return new CacheResponse($this->isStatusOk($result), true);
+        }
+
+        /* Call SETNX when no expiration is needed. */
+        $result = $this->client->setnx($key, $value);
+
+        /* Errors are masked, always return success. */
+        return new CacheResponse($result, true);
     }
 
     /**
@@ -114,6 +126,14 @@ class PredisProvider extends BaseProvider
         return is_int($result) && 1 <= $result
             ? new CacheResponse(true, true)
             : new CacheResponse(false, false);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getProviderName()
+    {
+        return self::PROVIDER_NAME;
     }
 
     /**

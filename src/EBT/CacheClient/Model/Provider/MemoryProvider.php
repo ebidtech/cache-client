@@ -17,7 +17,19 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MemoryProvider extends BaseProvider
 {
+    /**
+     * @const string
+     */
+    const PROVIDER_NAME = 'Memory';
+
+    /**
+     * @const string
+     */
     const KEY_VALUE = 'value';
+
+    /**
+     * @const string
+     */
     const KEY_TTL   = 'ttl';
 
     /**
@@ -202,6 +214,14 @@ class MemoryProvider extends BaseProvider
                 return 1 <= $value;
             }
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getProviderName()
+    {
+        return self::PROVIDER_NAME;
     }
 
     /**
