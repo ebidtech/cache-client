@@ -1,5 +1,5 @@
 {
-    "name":        "cache-client",
+    "name":        "ebidtech/cache-client",
     "description": "Multi provider cache service",
     "license":     "MIT",
     "homepage":    "https://github.com/ebidtech/cache-client",

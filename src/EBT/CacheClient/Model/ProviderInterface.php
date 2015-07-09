@@ -16,8 +16,10 @@ use EBT\CacheClient\Entity\CacheResponse;
 interface ProviderInterface
 {
     /* Cache provider options. */
-    const PROVIDER_OPT_PREFIX    = 'prefix';
-    const PROVIDER_OPT_SEPARATOR = 'separator';
+    const PROVIDER_OPT_PREFIX         = 'prefix';
+    const PROVIDER_OPT_SEPARATOR      = 'separator';
+    const PROVIDER_OPT_GC_PROBABILITY = 'gc_probability';
+    const PROVIDER_OPT_GC_DIVISOR     = 'gc_divisor';
 
     /* Cache command options. */
     const CMD_OPT_NAMESPACE            = 'namespace';
