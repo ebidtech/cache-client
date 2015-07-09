@@ -180,8 +180,8 @@ class MemoryProvider extends BaseProvider
         parent::configureProviderOptions($optionsResolver);
 
         /* Add allowed types. */
-        $optionsResolver->addAllowedTypes(ProviderInterface::PROVIDER_OPT_GC_PROBABILITY, array('int'));
-        $optionsResolver->addAllowedTypes(ProviderInterface::PROVIDER_OPT_GC_DIVISOR, array('int'));
+        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_GC_PROBABILITY, 'int');
+        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_GC_DIVISOR, 'int');
 
         /* Define default values. */
         $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_GC_PROBABILITY, 1);

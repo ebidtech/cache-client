@@ -52,20 +52,12 @@ abstract class BaseProvider implements ProviderInterface
     public function configureProviderOptions(OptionsResolver $optionsResolver)
     {
         /* Set default values. */
-        $optionsResolver->setDefaults(
-            array(
-                ProviderInterface::PROVIDER_OPT_PREFIX    => '',
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => ''
-            )
-        );
+        $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_PREFIX, '');
+        $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_SEPARATOR, '');
 
         /* Set allowed types. */
-        $optionsResolver->setAllowedValues(
-            array(
-                ProviderInterface::PROVIDER_OPT_PREFIX    => 'string',
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => 'string'
-            )
-        );
+        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_PREFIX, 'string');
+        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_SEPARATOR, 'string');
     }
 
     /**
@@ -97,7 +89,7 @@ abstract class BaseProvider implements ProviderInterface
         $namespaceVersion = $this->get($namespaceKey);
 
         /* If the namespace version is not set, generate a new one and set it. */
-        if (null === $namespaceVersion) {
+        if (! $namespaceVersion->getResult()) {
             $namespaceVersion = (string) $this->generateNamespaceVersion();
             $this->set($namespaceKey, $namespaceVersion, $namespaceExpiration);
         }
@@ -108,7 +100,7 @@ abstract class BaseProvider implements ProviderInterface
             $this->prefix,
             $namespace,
             $this->separator,
-            $namespaceVersion,
+            $namespaceVersion->getResult(),
             $this->separator,
             $key
         );
