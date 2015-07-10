@@ -42,7 +42,8 @@ class MemcachedProvider extends BaseProvider
     {
         $result = $this->client->get($this->getKey($key, $options));
 
-        return new CacheResponse($result, $this->isSuccess());
+        /* Not found result still represents a connection success. */
+        return new CacheResponse($result, $this->isSuccess(), $this->isSuccess() || $this->isNotFound());
     }
 
     /**
@@ -52,7 +53,8 @@ class MemcachedProvider extends BaseProvider
     {
         $result = $this->client->set($this->getKey($key, $options), $value, $expiration);
 
-        return new CacheResponse($result, $this->isSuccess());
+        /* Success should never fail, so anything other than success is also a server (connection) error. */
+        return new CacheResponse($result, $this->isSuccess(), $this->isSuccess());
     }
 
     /**
@@ -66,7 +68,7 @@ class MemcachedProvider extends BaseProvider
         if ($this->isBinaryProtocolActive()) {
             $result = $this->client->increment($key, $increment, $initialValue, $expiration);
 
-            return new CacheResponse($result, $this->isSuccess());
+            return new CacheResponse($result, $this->isSuccess(), $this->isSuccess());
         }
 
         /* If the binary protocol is disable we must implement the initial value logic. */
@@ -75,28 +77,30 @@ class MemcachedProvider extends BaseProvider
         /* In case or success or any error aside "not found" there's nothing more to do. */
         if ($this->isSuccess() || ! $this->isNotFound()) {
 
-            return new CacheResponse($result, $this->isSuccess());
+            return new CacheResponse($result, $this->isSuccess(), $this->isSuccess() || $this->isNotFound());
         }
 
         /* Try to add the key; notice that "add" is used instead of "set", to ensure we do not override
          * the value in case another process already set it.
          */
-        $result = $this->client->add($key, $increment + $initialValue, $expiration);
+        $this->client->add($key, $increment + $initialValue, $expiration);
 
         /* Created the key successfully. */
         if ($this->isSuccess()) {
 
-            return new CacheResponse($increment + $initialValue, $this->isSuccess());
+            return new CacheResponse($increment + $initialValue, true, true);
         }
 
-        /* The key was not stored because is already existed, try to increment a last time. */
+        /* The key was not stored because is already existed, try to increment one last time. */
         if ($this->isNotStored()) {
             $result = $this->client->increment($key, $increment);
 
-            return new CacheResponse($result, $this->isSuccess());
+            /* We might still have not found errors, but this time we're not trying again. */
+            return new CacheResponse($result, $this->isSuccess(), $this->isSuccess() || $this->isNotFound());
         }
 
-        return new CacheResponse($result, $this->isSuccess());
+        /* Default result, everything failed. */
+        return new CacheResponse(false, false, false);
     }
 
     /**
@@ -106,7 +110,8 @@ class MemcachedProvider extends BaseProvider
     {
         $result = $this->client->add($this->getKey($key, $options), $owner, $expiration);
 
-        return new CacheResponse($result, $this->isSuccess() || $this->isNotStored());
+        /* Either success or not stored represent successful server connections. */
+        return new CacheResponse($result, $result, $this->isSuccess() || $this->isNotStored());
     }
 
     /**
@@ -114,22 +119,14 @@ class MemcachedProvider extends BaseProvider
      */
     public function lockExists($key, array $options = array())
     {
-        $result = $this->client->get($this->getKey($key, $options));
+        $this->client->get($this->getKey($key, $options));
 
-        /* The locks exists, return true. */
-        if ($this->isSuccess()) {
-
-            return new CacheResponse(true, $this->isSuccess());
-        }
-
-        /* The locks does not exist, return false (still success). */
-        if ($this->isNotFound()) {
-
-            return new CacheResponse(false, $this->isNotFound());
-        }
-
-        /* Another error occurred, just return failure and the call result. */
-        return new CacheResponse($result, $this->isSuccess());
+        /* As long as either success or not found is returned the instruction was successful. */
+        return new CacheResponse(
+            $this->isSuccess(),
+            $this->isSuccess() || $this->isNotFound(),
+            $this->isSuccess() || $this->isNotFound()
+        );
     }
 
     /**
@@ -139,7 +136,8 @@ class MemcachedProvider extends BaseProvider
     {
         $result = $this->client->delete($this->getKey($key, $options));
 
-        return new CacheResponse($result, $this->isSuccess());
+        /* Not found represents a failed instruction, but not a server error. */
+        return new CacheResponse($result, $result, $this->isSuccess() || $this->isNotFound());
     }
 
     /**

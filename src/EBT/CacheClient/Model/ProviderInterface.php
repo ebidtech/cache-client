@@ -13,6 +13,12 @@ namespace EBT\CacheClient\Model;
 
 use EBT\CacheClient\Entity\CacheResponse;
 
+/**
+ * Interface EBT\CacheClient\Model\ProviderInterface
+ *
+ * Defines methods that all cache providers should implement. The default response on failure
+ * should always be false.
+ */
 interface ProviderInterface
 {
     /* Cache provider options. */
@@ -31,7 +37,7 @@ interface ProviderInterface
      * @param string $key     The key to fetch.
      * @param array  $options Additional options.
      *
-     * @return CacheResponse The stored value when it exists, FALSE on failure.
+     * @return CacheResponse
      */
     public function get($key, array $options = array());
 
@@ -43,7 +49,7 @@ interface ProviderInterface
      * @param integer|null $expiration Key TTL.
      * @param array        $options    Additional options.
      *
-     * @return CacheResponse TRUE when the value is set, FALSE on failure.
+     * @return CacheResponse
      */
     public function set($key, $value, $expiration = null, array $options = array());
 
@@ -56,7 +62,7 @@ interface ProviderInterface
      * @param integer|null $expiration   Key TTL (only applies when the key is created).
      * @param array        $options      Additional options.
      *
-     * @return CacheResponse The new value when it is incremented, FALSE on failure.
+     * @return CacheResponse
      */
     public function increment($key, $increment = 1, $initialValue = 0, $expiration = null, array $options = array());
 
@@ -68,7 +74,7 @@ interface ProviderInterface
      * @param integer|null $expiration Key TTL (only applies when the key is created).
      * @param array        $options    Additional options.
      *
-     * @return CacheResponse TRUE if the lock was acquired, FALSE if it was not and FALSE on failure.
+     * @return CacheResponse
      */
     public function lock($key, $owner = null, $expiration = null, array $options = array());
 
@@ -78,7 +84,7 @@ interface ProviderInterface
      * @param string $key     Key to be checked.
      * @param array  $options Additional options.
      *
-     * @return CacheResponse TRUE if the lock was exists, FALSE if it does not and FALSE on failure.
+     * @return CacheResponse
      */
     public function lockExists($key, array $options = array());
 
@@ -88,7 +94,7 @@ interface ProviderInterface
      * @param string $key     Key to delete.
      * @param array  $options Additional options.
      *
-     * @return CacheResponse TRUE if the key was deleted, FALSE on failure.
+     * @return CacheResponse
      */
     public function delete($key, array $options = array());
 
@@ -98,7 +104,7 @@ interface ProviderInterface
      *
      * @param string $namespace
      *
-     * @return CacheResponse TRUE if the namespace was flushed, FALSE on failure.
+     * @return CacheResponse
      */
     public function flush($namespace);
 }

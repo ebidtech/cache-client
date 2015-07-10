@@ -45,12 +45,13 @@ class PredisProvider extends BaseProvider
         $key = $this->getKey($key, $options);
         $data = $this->client->get($key);
 
-        if ($this->isSuccess($data)) {
+        /* Null data represents that the key was not found, instruction error. */
+        if (null === $data) {
 
-            return new CacheResponse($this->unpackData($data), true);
+            return new CacheResponse(false, false, true);
         }
 
-        return new CacheResponse(false, false);
+        return new CacheResponse($this->unpackData($data), true, true);
     }
 
     /**
@@ -66,7 +67,7 @@ class PredisProvider extends BaseProvider
             ? $this->client->set($key, $value, 'ex', $expiration)
             : $this->client->set($key, $value);
 
-        return new CacheResponse($this->isStatusOk($result), $this->isStatusOk($result));
+        return new CacheResponse($this->isStatusOk($result), $this->isStatusOk($result), true);
     }
 
     /**
@@ -75,7 +76,7 @@ class PredisProvider extends BaseProvider
     public function increment($key, $increment = 1, $initialValue = 0, $expiration = null, array $options = array())
     {
         //@TODO
-        //$key = $this->getKey($key, $options);
+        $key = $this->getKey($key, $options);
     }
 
     /**
@@ -91,14 +92,14 @@ class PredisProvider extends BaseProvider
             $result = $this->client->set($key, $value, 'ex', $expiration, 'nx');
 
             /* There's really no "failure" state here, errors are masked by the client. */
-            return new CacheResponse($this->isStatusOk($result), true);
+            return new CacheResponse($this->isStatusOk($result), true, true);
         }
 
         /* Call SETNX when no expiration is needed. */
         $result = $this->client->setnx($key, $value);
 
         /* Errors are masked, always return success. */
-        return new CacheResponse($result, true);
+        return new CacheResponse($result, true, true);
     }
 
     /**
@@ -109,9 +110,7 @@ class PredisProvider extends BaseProvider
         $key = $this->getKey($key, $options);
         $result = $this->client->exists($key);
 
-        return is_bool($result)
-            ? new CacheResponse($result, true)
-            : new CacheResponse(false, false);
+        return new CacheResponse($result, true, true);
     }
 
     /**
@@ -124,16 +123,8 @@ class PredisProvider extends BaseProvider
 
         /* "del" returns the number of of deleted keys, so 0 or a non-integer results are failures. */
         return is_int($result) && 1 <= $result
-            ? new CacheResponse(true, true)
-            : new CacheResponse(false, false);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getProviderName()
-    {
-        return self::PROVIDER_NAME;
+            ? new CacheResponse(true, true, true)
+            : new CacheResponse(false, false, true);
     }
 
     /**
@@ -142,6 +133,14 @@ class PredisProvider extends BaseProvider
     public function flush($namespace)
     {
         return $this->delete($namespace);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getProviderName()
+    {
+        return self::PROVIDER_NAME;
     }
 
     /**
@@ -166,37 +165,6 @@ class PredisProvider extends BaseProvider
     protected function unpackData($data)
     {
         return unserialize($data);
-    }
-
-    /**
-     * Checks if a Redis response represents success.
-     *
-     * @param mixed $response The response to parse.
-     *
-     * @return boolean TRUE if the response represents success, FALSE otherwise.
-     */
-    protected function isSuccess($response)
-    {
-        /* Boolean responses represent their own success. */
-        if (is_bool($response)) {
-
-            return $response;
-        }
-
-        /* 'NULL' responses. */
-        if (null === $response) {
-
-            return false;
-        }
-
-        /* Status responses. */
-        if ($response instanceof Status) {
-
-            return 'OK' === $response->getPayload();
-        }
-
-        /* Return TRUE by default. */
-        return true;
     }
 
     /**

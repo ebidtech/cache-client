@@ -59,11 +59,12 @@ class MemoryProvider extends BaseProvider
         /* Key does not exist. */
         if (empty($info)) {
 
-            return new CacheResponse(false, false);
+            return new CacheResponse(false, false, true);
         }
 
         return new CacheResponse(
             $this->unpackData($info[self::KEY_VALUE]),
+            true,
             true
         );
     }
@@ -82,7 +83,7 @@ class MemoryProvider extends BaseProvider
         );
 
         /* Currently we have no reason for this to fail. */
-        return new CacheResponse(true, true);
+        return new CacheResponse(true, true, true);
     }
 
     /**
@@ -106,14 +107,14 @@ class MemoryProvider extends BaseProvider
         if (! is_int($value)) {
 
             /* This one also represents an operation failure. */
-            return new CacheResponse(false, false);
+            return new CacheResponse(false, false, true);
         }
 
         /* Everything looks good, increment the value, store it and return the new value. */
         $value += $increment;
         $this->memory[$newKey][self::KEY_VALUE] = $this->packData($value);
 
-        return new CacheResponse($value, true);
+        return new CacheResponse($value, true, true);
     }
 
     /**
@@ -126,7 +127,7 @@ class MemoryProvider extends BaseProvider
         /* We can set the lock if it doesn't exist. */
         return empty($info)
             ? $this->set($key, $owner, $expiration, $options)
-            : new CacheResponse(false, true);
+            : new CacheResponse(false, false, true);
     }
 
     /**
@@ -138,8 +139,8 @@ class MemoryProvider extends BaseProvider
 
         /* No motives for this to fail. */
         return empty($info)
-            ? new CacheResponse(false, true)
-            : new CacheResponse(true, true);
+            ? new CacheResponse(false, true, true)
+            : new CacheResponse(true, true, true);
     }
 
     /**
@@ -153,13 +154,13 @@ class MemoryProvider extends BaseProvider
         /* The given key did not exist, this is a failure. */
         if (empty($info)) {
 
-            return new CacheResponse(false, false);
+            return new CacheResponse(false, false, true);
         }
 
         /* Everything looks good, delete the key. */
         unset($this->memory[$key]);
 
-        return new CacheResponse(true, true);
+        return new CacheResponse(true, true, true);
     }
 
     /**
