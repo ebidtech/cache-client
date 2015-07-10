@@ -45,7 +45,7 @@ interface ProviderInterface
      * Sets a new value in the cache.
      *
      * @param string       $key        Key to set.
-     * @param mixed        $value      Value to set (note that null values will be converted to false).
+     * @param string       $value      Value to set.
      * @param integer|null $expiration Key TTL.
      * @param array        $options    Additional options.
      *
