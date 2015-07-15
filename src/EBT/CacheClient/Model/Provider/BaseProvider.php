@@ -62,13 +62,12 @@ abstract class BaseProvider implements ProviderInterface
     public function set($key, $value, $expiration = null, array $options = array())
     {
         /* Validate parameters. */
-        /*switch (false) {
+        switch (false) {
             case $this->getValidator()->requiredStringNotEmpty($key, __METHOD__, 'key'):
             case $this->getValidator()->requiredString($value, __METHOD__, 'value'):
             case $this->getValidator()->optionalPositiveInteger($expiration, __METHOD__, 'expiration'):
-
                 return new CacheResponse(false, false, true, $this->getValidator()->getLastError());
-        }*/
+        }
 
         return $this->doSet($key, $value, $expiration, $options);
     }
@@ -90,7 +89,8 @@ abstract class BaseProvider implements ProviderInterface
      * {@inheritdoc}
      */
     public function flush($namespace)
-    {        /* Validate the key. */
+    {
+        /* Validate the key. */
         if (! $this->getValidator()->requiredStringNotEmpty($namespace, __METHOD__, 'namespace')) {
             return new CacheResponse(false, false, true, $this->getValidator()->getLastError());
         }
@@ -251,7 +251,7 @@ abstract class BaseProvider implements ProviderInterface
      *
      * @return CacheResponse
      */
-    protected abstract function doGet($key, array $options = array());
+    abstract protected function doGet($key, array $options = array());
 
     /**
      * Sets a new value in the cache.
@@ -265,7 +265,7 @@ abstract class BaseProvider implements ProviderInterface
      *
      * @return CacheResponse
      */
-    protected abstract function doSet($key, $value, $expiration, array $options = array());
+    abstract protected function doSet($key, $value, $expiration, array $options = array());
 
     /**
      * Deletes a single key.
@@ -277,7 +277,7 @@ abstract class BaseProvider implements ProviderInterface
      *
      * @return CacheResponse
      */
-    protected abstract function doDelete($key, array $options = array());
+    abstract protected function doDelete($key, array $options = array());
 
     /**
      * Deletes all cached keys in a namespace. This operation is not guaranteed to delete the affected
@@ -289,12 +289,12 @@ abstract class BaseProvider implements ProviderInterface
      *
      * @return CacheResponse
      */
-    protected abstract function doFlush($namespace);
+    abstract protected function doFlush($namespace);
 
     /**
      * Retrieves the provider's name.
      *
      * @return string
      */
-    protected abstract function getProviderName();
+    abstract protected function getProviderName();
 }
