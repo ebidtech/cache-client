@@ -13,9 +13,9 @@ namespace EBT\CacheClient\Entity;
 
 class CacheResponse
 {
-    const RESOURCE_NOT_FOUND  = 'Resource not found';
-    const RESOURCE_NOT_STORED = 'Resource not stored';
-    const CONNECTION_ERROR    = 'Connection error';
+    const RESOURCE_NOT_FOUND  = 'Resource not found.';
+    const RESOURCE_NOT_STORED = 'Resource not stored.';
+    const CONNECTION_ERROR    = 'Connection error.';
 
     /**
      * @var mixed

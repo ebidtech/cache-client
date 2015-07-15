@@ -32,30 +32,81 @@ class MemcachedProvider extends BaseProvider
      */
     public function __construct(\Memcached $client)
     {
+        parent::__construct();
+
         $this->client = $client;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function get($key, array $options = array())
+    protected function doGet($key, array $options = array())
     {
         $result = $this->client->get($this->getKey($key, $options));
 
-        /* Not found result still represents a connection success. */
-        return new CacheResponse($result, $this->isSuccess(), $this->isSuccess() || $this->isNotFound());
+        switch (true) {
+            case $this->isSuccess():
+                return new CacheResponse($result, true, true);
+            case $this->isNotFound():
+                return new CacheResponse(false, false, true, CacheResponse::RESOURCE_NOT_FOUND);
+        }
+
+        /* If everything failed we're dealing with a backend (connection) error. */
+        return new CacheResponse(false, false, false, CacheResponse::CONNECTION_ERROR);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function set($key, $value, $expiration = null, array $options = array())
+    protected function doSet($key, $value, $expiration, array $options = array())
     {
-        $result = $this->client->set($this->getKey($key, $options), $value, $expiration);
+        $this->client->set($this->getKey($key, $options), $value, $expiration);
 
         /* Success should never fail, so anything other than success is also a server (connection) error. */
-        return new CacheResponse($result, $this->isSuccess(), $this->isSuccess());
+        if ($this->isSuccess()) {
+            return new CacheResponse(true, true, true);
+        }
+
+        return new CacheResponse(false, false, false, CacheResponse::CONNECTION_ERROR);
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doDelete($key, array $options = array())
+    {
+        $this->client->delete($this->getKey($key, $options));
+
+        switch (true) {
+            case $this->isSuccess():
+                return new CacheResponse(true, true, true);
+            case $this->isNotFound():
+                return new CacheResponse(false, false, true, CacheResponse::RESOURCE_NOT_FOUND);
+        }
+
+        /* If everything failed we're dealing with a backend (connection) error. */
+        return new CacheResponse(false, false, false, CacheResponse::CONNECTION_ERROR);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doFlush($namespace)
+    {
+        return $this->doDelete($namespace);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * {@inheritdoc}
@@ -103,50 +154,6 @@ class MemcachedProvider extends BaseProvider
         return new CacheResponse(false, false, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function lock($key, $owner = null, $expiration = null, array $options = array())
-    {
-        $result = $this->client->add($this->getKey($key, $options), $owner, $expiration);
-
-        /* Either success or not stored represent successful server connections. */
-        return new CacheResponse($result, $result, $this->isSuccess() || $this->isNotStored());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function lockExists($key, array $options = array())
-    {
-        $this->client->get($this->getKey($key, $options));
-
-        /* As long as either success or not found is returned the instruction was successful. */
-        return new CacheResponse(
-            $this->isSuccess(),
-            $this->isSuccess() || $this->isNotFound(),
-            $this->isSuccess() || $this->isNotFound()
-        );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function delete($key, array $options = array())
-    {
-        $result = $this->client->delete($this->getKey($key, $options));
-
-        /* Not found represents a failed instruction, but not a server error. */
-        return new CacheResponse($result, $result, $this->isSuccess() || $this->isNotFound());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function flush($namespace)
-    {
-        return $this->delete($namespace);
-    }
 
     /**
      * {@inheritdoc}
@@ -157,13 +164,23 @@ class MemcachedProvider extends BaseProvider
     }
 
     /**
+     * Retrieves the result code of the last client call.
+     *
+     * @return int
+     */
+    protected function getResultCode()
+    {
+        return $this->getClient()->getResultCode();
+    }
+
+    /**
      * Checks if the last operation returned a resource not found code.
      *
      * @return boolean
      */
     protected function isNotFound()
     {
-        return \Memcached::RES_NOTFOUND === $this->client->getResultCode();
+        return \Memcached::RES_NOTFOUND === $this->getResultCode();
     }
 
     /**
@@ -173,7 +190,7 @@ class MemcachedProvider extends BaseProvider
      */
     protected function isNotStored()
     {
-        return \Memcached::RES_NOTSTORED === $this->client->getResultCode();
+        return \Memcached::RES_NOTSTORED === $this->getResultCode();
     }
 
     /**
@@ -183,7 +200,7 @@ class MemcachedProvider extends BaseProvider
      */
     protected function isSuccess()
     {
-        return \Memcached::RES_SUCCESS === $this->client->getResultCode();
+        return \Memcached::RES_SUCCESS === $this->getResultCode();
     }
 
     /**
@@ -193,6 +210,16 @@ class MemcachedProvider extends BaseProvider
      */
     protected function isBinaryProtocolActive()
     {
-        return (bool) $this->client->getOption(\Memcached::OPT_BINARY_PROTOCOL);
+        return (bool) $this->getClient()->getOption(\Memcached::OPT_BINARY_PROTOCOL);
+    }
+
+    /**
+     * Retrieves the Memcached client instance.
+     *
+     * @return \Memcached
+     */
+    protected function getClient()
+    {
+        return $this->client;
     }
 }

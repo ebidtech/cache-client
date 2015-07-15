@@ -50,130 +50,6 @@ class MemoryProvider extends BaseProvider
     /**
      * {@inheritdoc}
      */
-    public function get($key, array $options = array())
-    {
-        $this->collectGarbage();
-        $key = $this->getKey($key, $options);
-        $info = $this->getKeyInfo($key);
-
-        /* Key does not exist. */
-        if (empty($info)) {
-
-            return new CacheResponse(false, false, true);
-        }
-
-        return new CacheResponse(
-            $this->unpackData($info[self::KEY_VALUE]),
-            true,
-            true
-        );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function set($key, $value, $expiration = null, array $options = array())
-    {
-        $this->collectGarbage();
-
-        /* Serializing data to make this as close as possible to the other storage providers. */
-        $this->memory[$this->getKey($key, $options)] = array(
-            self::KEY_VALUE => $this->packData($value),
-            self::KEY_TTL => $this->getExpirationTimestamp($expiration)
-        );
-
-        /* Currently we have no reason for this to fail. */
-        return new CacheResponse(true, true, true);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function increment($key, $increment = 1, $initialValue = 0, $expiration = null, array $options = array())
-    {
-        /* Retrieve the value. */
-        $newKey = $this->getKey($key, $options);
-        $info = $this->getKeyInfo($newKey);
-
-        /* Key does not exist, create is as usual. */
-        if (empty($info)) {
-
-            return $this->set($key, $increment + $initialValue, $expiration, $options);
-        }
-
-        /* The key exists, so let's try to increment (only for integer values). */
-        $value = $this->unpackData($info[self::KEY_VALUE]);
-
-        if (! is_int($value)) {
-
-            /* This one also represents an operation failure. */
-            return new CacheResponse(false, false, true);
-        }
-
-        /* Everything looks good, increment the value, store it and return the new value. */
-        $value += $increment;
-        $this->memory[$newKey][self::KEY_VALUE] = $this->packData($value);
-
-        return new CacheResponse($value, true, true);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function lock($key, $owner = null, $expiration = null, array $options = array())
-    {
-        $info = $this->getKeyInfo($this->getKey($key, $options));
-
-        /* We can set the lock if it doesn't exist. */
-        return empty($info)
-            ? $this->set($key, $owner, $expiration, $options)
-            : new CacheResponse(false, false, true);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function lockExists($key, array $options = array())
-    {
-        $info = $this->getKeyInfo($this->getKey($key, $options));
-
-        /* No motives for this to fail. */
-        return empty($info)
-            ? new CacheResponse(false, true, true)
-            : new CacheResponse(true, true, true);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function delete($key, array $options = array())
-    {
-        $key = $this->getKey($key, $options);
-        $info = $this->getKeyInfo($key);
-
-        /* The given key did not exist, this is a failure. */
-        if (empty($info)) {
-
-            return new CacheResponse(false, false, true);
-        }
-
-        /* Everything looks good, delete the key. */
-        unset($this->memory[$key]);
-
-        return new CacheResponse(true, true, true);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function flush($namespace)
-    {
-        return $this->delete($namespace);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function setProviderOptions(array $options)
     {
         parent::setProviderOptions($options);
@@ -215,6 +91,68 @@ class MemoryProvider extends BaseProvider
                 return 1 <= $value;
             }
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doGet($key, array $options = array())
+    {
+        $this->collectGarbage();
+        $info = $this->getKeyInfo($this->getKey($key, $options));
+
+        /* Key does not exist. */
+        if (empty($info)) {
+
+            return new CacheResponse(false, false, true, CacheResponse::RESOURCE_NOT_FOUND);
+        }
+
+        return new CacheResponse($info[self::KEY_VALUE], true, true);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doSet($key, $value, $expiration = null, array $options = array())
+    {
+        $this->collectGarbage();
+
+        /* Serializing data to make this as close as possible to the other storage providers. */
+        $this->memory[$this->getKey($key, $options)] = array(
+            self::KEY_VALUE => $value,
+            self::KEY_TTL => $this->getExpirationTimestamp($expiration)
+        );
+
+        /* Currently we have no reason for this to fail. */
+        return new CacheResponse(true, true, true);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doDelete($key, array $options = array())
+    {
+        $key = $this->getKey($key, $options);
+        $info = $this->getKeyInfo($key);
+
+        /* The given key did not exist, this is a failure. */
+        if (empty($info)) {
+
+            return new CacheResponse(false, false, true, CacheResponse::RESOURCE_NOT_FOUND);
+        }
+
+        /* Everything looks good, delete the key. */
+        unset($this->memory[$key]);
+
+        return new CacheResponse(true, true, true);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function doFlush($namespace)
+    {
+        return $this->delete($namespace);
     }
 
     /**
@@ -274,30 +212,6 @@ class MemoryProvider extends BaseProvider
     protected function isExpired($timestamp)
     {
         return is_int($timestamp) || time() > $timestamp;
-    }
-
-    /**
-     * Packs data for storage.
-     *
-     * @param mixed $data The data to be packed.
-     *
-     * @return string The packed data.
-     */
-    protected function packData($data)
-    {
-        return serialize($data);
-    }
-
-    /**
-     * Unpacks data for usage.
-     *
-     * @param mixed $data The data to be unpacked.
-     *
-     * @return string The unpacked data.
-     */
-    protected function unpackData($data)
-    {
-        return unserialize($data);
     }
 
     /**

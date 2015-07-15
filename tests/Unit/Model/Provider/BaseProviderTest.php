@@ -11,6 +11,7 @@
 
 namespace EBT\CacheClient\Tests\Unit\Model\Provider;
 
+use EBT\CacheClient\Entity\CacheResponse;
 use EBT\CacheClient\Model\Provider\BaseProvider;
 use EBT\CacheClient\Model\ProviderInterface;
 use EBT\CacheClient\Tests\Unit\BaseUnitTestCase;
@@ -54,13 +55,8 @@ class BaseProviderTest extends BaseUnitTestCase
         $prefix = $this->getPropertyUsingReflection($this->baseProvider, 'prefix');
         $separator = $this->getPropertyUsingReflection($this->baseProvider, 'separator');
 
-        /* Both are null. */
-        $this->baseProvider->setProviderOptions(
-            array(
-                ProviderInterface::PROVIDER_OPT_PREFIX    => null,
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => null
-            )
-        );
+        /* Both are not defined. */
+        $this->baseProvider->setProviderOptions(array());
         $this->assertEquals('', $prefix->getValue($this->baseProvider));
         $this->assertEquals('', $separator->getValue($this->baseProvider));
 
@@ -113,12 +109,12 @@ class BaseProviderTest extends BaseUnitTestCase
         $method = $this->getMethodUsingReflection($this->baseProvider, 'getKey');
         $this->baseProvider
             ->expects($this->once())
-            ->method('get')
-            ->with('prefix:my_ns')
-            ->will($this->returnValue('12345'));
+            ->method('doGet')
+            ->with('my_ns')
+            ->will($this->returnValue(new CacheResponse('12345', true, true)));
         $this->baseProvider
             ->expects($this->never())
-            ->method('set');
+            ->method('doSet');
 
         /* Call method. */
         $options = array(
@@ -139,13 +135,13 @@ class BaseProviderTest extends BaseUnitTestCase
         $method = $this->getMethodUsingReflection($this->baseProvider, 'getKey');
         $this->baseProvider
             ->expects($this->once())
-            ->method('get')
-            ->with('prefix:my_ns')
-            ->will($this->returnValue(null));
+            ->method('doGet')
+            ->with('my_ns')
+            ->will($this->returnValue(new CacheResponse(false, false, false, 'Some error')));
         $this->baseProvider
             ->expects($this->once())
-            ->method('set')
-            ->with('prefix:my_ns', $this->matchesRegularExpression('/^[1-9][0-9]*$/'), 30)
+            ->method('doSet')
+            ->with('my_ns', $this->matchesRegularExpression('/^[1-9][0-9]*$/'), 30)
             ->will($this->returnValue(true));
 
         /* Call method. */
