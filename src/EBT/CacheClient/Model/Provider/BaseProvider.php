@@ -110,6 +110,16 @@ abstract class BaseProvider implements ProviderInterface
         $this->configureProviderOptions($optionsResolver);
         $options = $this->resolveOptions($optionsResolver, $options);
 
+        $this->setOptions($options);
+    }
+
+    /**
+     * Configures the provider with a pre resolved array of values.
+     *
+     * @param array $options Resolved options.
+     */
+    protected function setOptions(array $options)
+    {
         /* Set key prefix and separator. */
         $this->separator = $options[ProviderInterface::PROVIDER_OPT_SEPARATOR];
         $this->prefix    = $options[ProviderInterface::PROVIDER_OPT_PREFIX];
@@ -127,7 +137,7 @@ abstract class BaseProvider implements ProviderInterface
      *
      * @return OptionsResolver
      */
-    public function configureProviderOptions(OptionsResolver $optionsResolver)
+    protected function configureProviderOptions(OptionsResolver $optionsResolver)
     {
         /* Set default values. */
         $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_PREFIX, '');

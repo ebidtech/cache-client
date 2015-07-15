@@ -32,6 +32,8 @@ class PredisProvider extends BaseProvider
      */
     public function __construct(ClientInterface $client)
     {
+        parent::__construct();
+
         $this->client = $client;
     }
 
@@ -46,65 +48,38 @@ class PredisProvider extends BaseProvider
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function get($key, array $options = array())
+    protected function doGet($key, array $options = array())
     {
-        // TODO: Implement get() method.
+        // TODO: Implement doGet() method.
         throw new \Exception('Method not implemented');
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function set($key, $value, $expiration = null, array $options = array())
+    protected function doSet($key, $value, $expiration, array $options = array())
     {
-        // TODO: Implement set() method.
+        // TODO: Implement doSet() method.
         throw new \Exception('Method not implemented');
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function increment($key, $increment = 1, $initialValue = 0, $expiration = null, array $options = array())
+    protected function doDelete($key, array $options = array())
     {
-        // TODO: Implement increment() method.
+        // TODO: Implement doDelete() method.
         throw new \Exception('Method not implemented');
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function lock($key, $owner = null, $expiration = null, array $options = array())
+    protected function doFlush($namespace)
     {
-        // TODO: Implement lock() method.
-        throw new \Exception('Method not implemented');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function lockExists($key, array $options = array())
-    {
-        // TODO: Implement lockExists() method.
-        throw new \Exception('Method not implemented');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function delete($key, array $options = array())
-    {
-        // TODO: Implement delete() method.
-        throw new \Exception('Method not implemented');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function flush($namespace)
-    {
-        // TODO: Implement flush() method.
+        // TODO: Implement doFlush() method.
         throw new \Exception('Method not implemented');
     }
 }

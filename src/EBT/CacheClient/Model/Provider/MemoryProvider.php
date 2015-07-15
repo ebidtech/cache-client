@@ -30,7 +30,7 @@ class MemoryProvider extends BaseProvider
     /**
      * @const string
      */
-    const KEY_TTL   = 'ttl';
+    const KEY_TTL = 'ttl';
 
     /**
      * @var integer
@@ -46,52 +46,6 @@ class MemoryProvider extends BaseProvider
      * @var array
      */
     protected $memory = array();
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setProviderOptions(array $options)
-    {
-        parent::setProviderOptions($options);
-
-        /* Set provider specific options. */
-        $this->gcProbability =
-            (float) $options[ProviderInterface::PROVIDER_OPT_GC_PROBABILITY] /
-            (float) $options[ProviderInterface::PROVIDER_OPT_GC_DIVISOR];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function configureProviderOptions(OptionsResolver $optionsResolver)
-    {
-        /* Parent options still apply. */
-        parent::configureProviderOptions($optionsResolver);
-
-        /* Add allowed types. */
-        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_GC_PROBABILITY, 'int');
-        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_GC_DIVISOR, 'int');
-
-        /* Define default values. */
-        $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_GC_PROBABILITY, 1);
-        $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_GC_DIVISOR, 100);
-
-        /* Set allowed values. */
-        $optionsResolver->setAllowedValues(
-            ProviderInterface::PROVIDER_OPT_GC_PROBABILITY,
-            function ($value) {
-
-                return 0 <= $value;
-            }
-        );
-        $optionsResolver->setAllowedValues(
-            ProviderInterface::PROVIDER_OPT_GC_DIVISOR,
-            function ($value) {
-
-                return 1 <= $value;
-            }
-        );
-    }
 
     /**
      * {@inheritdoc}
@@ -120,10 +74,11 @@ class MemoryProvider extends BaseProvider
         /* Serializing data to make this as close as possible to the other storage providers. */
         $this->memory[$this->getKey($key, $options)] = array(
             self::KEY_VALUE => $value,
-            self::KEY_TTL => $this->getExpirationTimestamp($expiration)
+            self::KEY_TTL   => $this->getExpirationTimestamp($expiration),
         );
 
         /* Currently we have no reason for this to fail. */
+
         return new CacheResponse(true, true, true);
     }
 
@@ -132,7 +87,7 @@ class MemoryProvider extends BaseProvider
      */
     protected function doDelete($key, array $options = array())
     {
-        $key = $this->getKey($key, $options);
+        $key  = $this->getKey($key, $options);
         $info = $this->getKeyInfo($key);
 
         /* The given key did not exist, this is a failure. */
@@ -156,11 +111,34 @@ class MemoryProvider extends BaseProvider
     }
 
     /**
-     * {@inheritdoc}
+     * Removes any expired keys (effective removal is based on a random percentage).
      */
-    protected function getProviderName()
+    protected function collectGarbage()
     {
-        return self::PROVIDER_NAME;
+        /* Don't apply the garbage collector. */
+        if (((float) mt_rand() / (float) mt_getrandmax()) >= $this->gcProbability) {
+
+            return;
+        }
+
+        /* Remove all expired keys. */
+        foreach ($this->memory as $key => &$info) {
+            if ($this->isExpired($info[self::KEY_TTL])) {
+                unset($this->memory[$key]);
+            }
+        }
+    }
+
+    /**
+     * Checks if a certain time to live has already expired.
+     *
+     * @param integer $timestamp
+     *
+     * @return boolean TRUE if it is expired, FALSE otherwise.
+     */
+    protected function isExpired($timestamp)
+    {
+        return is_int($timestamp) && time() >= $timestamp;
     }
 
     /**
@@ -203,33 +181,56 @@ class MemoryProvider extends BaseProvider
     }
 
     /**
-     * Checks if a certain time to live has already expired.
-     *
-     * @param integer $timestamp
-     *
-     * @return boolean TRUE if it is expired, FALSE otherwise.
+     * {@inheritdoc}
      */
-    protected function isExpired($timestamp)
+    protected function getProviderName()
     {
-        return is_int($timestamp) || time() > $timestamp;
+        return self::PROVIDER_NAME;
     }
 
     /**
-     * Removes any expired keys (effective removal is based on a random percentage).
+     * {@inheritdoc}
      */
-    protected function collectGarbage()
+    protected function setOptions(array $options)
     {
-        /* Don't apply the garbage collector. */
-        if (((float) mt_rand() / (float) mt_getrandmax()) >= $this->gcProbability) {
+        parent::setOptions($options);
 
-            return;
-        }
+        /* Set provider specific options. */
+        $this->gcProbability =
+            (float) $options[ProviderInterface::PROVIDER_OPT_GC_PROBABILITY] /
+            (float) $options[ProviderInterface::PROVIDER_OPT_GC_DIVISOR];
+    }
 
-        /* Remove all expired keys. */
-        foreach ($this->memory as $key => &$info) {
-            if ($this->isExpired($info[self::KEY_TTL])) {
-                unset($this->memory[$key]);
+    /**
+     * {@inheritdoc}
+     */
+    protected function configureProviderOptions(OptionsResolver $optionsResolver)
+    {
+        /* Parent options still apply. */
+        parent::configureProviderOptions($optionsResolver);
+
+        /* Define default values. */
+        $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_GC_PROBABILITY, 1);
+        $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_GC_DIVISOR, 100);
+
+        /* Add allowed types. */
+        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_GC_PROBABILITY, 'int');
+        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_GC_DIVISOR, 'int');
+
+        /* Set allowed values. */
+        $optionsResolver->setAllowedValues(
+            ProviderInterface::PROVIDER_OPT_GC_PROBABILITY,
+            function ($value) {
+
+                return 0 <= $value;
             }
-        }
+        );
+        $optionsResolver->setAllowedValues(
+            ProviderInterface::PROVIDER_OPT_GC_DIVISOR,
+            function ($value) {
+
+                return 1 <= $value;
+            }
+        );
     }
 }

@@ -14,7 +14,7 @@ namespace EBT\CacheClient\Tests\Unit\Model\Provider;
 use EBT\CacheClient\Entity\CacheResponse;
 use EBT\CacheClient\Model\Provider\BaseProvider;
 use EBT\CacheClient\Model\ProviderInterface;
-use EBT\CacheClient\Tests\Unit\BaseUnitTestCase;
+use EBT\CacheClient\Tests\BaseUnitTestCase;
 
 /**
  * @group unit
@@ -28,31 +28,12 @@ class BaseProviderTest extends BaseUnitTestCase
     protected $baseProvider;
 
     /**
-     * {@inheritdoc}
-     */
-    protected function setUp()
-    {
-        parent::setUp();
-
-        /* Create a mock for the abstract class. */
-        $this->baseProvider = $this->getMockForAbstractClass('EBT\CacheClient\Model\Provider\BaseProvider');
-
-        /* Setup default provider options. */
-        $this->baseProvider->setProviderOptions(
-            array(
-                ProviderInterface::PROVIDER_OPT_PREFIX    => 'prefix',
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => ':'
-            )
-        );
-    }
-
-    /**
      * Tests if the provider options are correctly set.
      */
     public function testSetProviderOptions()
     {
         /* Get target properties using reflection. */
-        $prefix = $this->getPropertyUsingReflection($this->baseProvider, 'prefix');
+        $prefix    = $this->getPropertyUsingReflection($this->baseProvider, 'prefix');
         $separator = $this->getPropertyUsingReflection($this->baseProvider, 'separator');
 
         /* Both are not defined. */
@@ -64,7 +45,7 @@ class BaseProviderTest extends BaseUnitTestCase
         $this->baseProvider->setProviderOptions(
             array(
                 ProviderInterface::PROVIDER_OPT_PREFIX    => '',
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => ':'
+                ProviderInterface::PROVIDER_OPT_SEPARATOR => ':',
             )
         );
         $this->assertEquals('', $prefix->getValue($this->baseProvider));
@@ -74,7 +55,7 @@ class BaseProviderTest extends BaseUnitTestCase
         $this->baseProvider->setProviderOptions(
             array(
                 ProviderInterface::PROVIDER_OPT_PREFIX    => 'prefix',
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => ''
+                ProviderInterface::PROVIDER_OPT_SEPARATOR => '',
             )
         );
         $this->assertEquals('prefix', $prefix->getValue($this->baseProvider));
@@ -84,7 +65,7 @@ class BaseProviderTest extends BaseUnitTestCase
         $this->baseProvider->setProviderOptions(
             array(
                 ProviderInterface::PROVIDER_OPT_PREFIX    => 'prefix',
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => ':'
+                ProviderInterface::PROVIDER_OPT_SEPARATOR => ':',
             )
         );
         $this->assertEquals('prefix:', $prefix->getValue($this->baseProvider));
@@ -118,7 +99,7 @@ class BaseProviderTest extends BaseUnitTestCase
 
         /* Call method. */
         $options = array(
-            ProviderInterface::CMD_OPT_NAMESPACE => 'my_ns'
+            ProviderInterface::CMD_OPT_NAMESPACE => 'my_ns',
         );
         $this->assertEquals(
             'prefix:my_ns:12345:my_key',
@@ -147,11 +128,30 @@ class BaseProviderTest extends BaseUnitTestCase
         /* Call method. */
         $options = array(
             ProviderInterface::CMD_OPT_NAMESPACE            => 'my_ns',
-            ProviderInterface::CMD_OPT_NAMESPACE_EXPIRATION => 30
+            ProviderInterface::CMD_OPT_NAMESPACE_EXPIRATION => 30,
         );
         $this->assertRegExp(
             '/^prefix:my_ns:[1-9][0-9]*:my_key$/',
             $method->invoke($this->baseProvider, 'my_key', $options)
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp()
+    {
+        parent::setUp();
+
+        /* Create a mock for the abstract class. */
+        $this->baseProvider = $this->getMockForAbstractClass('EBT\CacheClient\Model\Provider\BaseProvider');
+
+        /* Setup default provider options. */
+        $this->baseProvider->setProviderOptions(
+            array(
+                ProviderInterface::PROVIDER_OPT_PREFIX    => 'prefix',
+                ProviderInterface::PROVIDER_OPT_SEPARATOR => ':',
+            )
         );
     }
 }

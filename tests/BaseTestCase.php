@@ -1,17 +1,16 @@
 <?php
 
 /**
- * This file is a part of the Cache Client library.
+ * LICENSE: [EMAILBIDDING_DESCRIPTION_LICENSE_HERE]
  *
- * (c) 2015 Ebidtech
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * @author     Diogo Teixeira <diogo.teixeira@emailbidding.com>
+ * @copyright  2012-2015 Emailbidding
+ * @license    [EMAILBIDDING_URL_LICENSE_HERE]
  */
 
-namespace EBT\CacheClient\Tests\Unit;
+namespace EBT\CacheClient\Tests;
 
-class BaseUnitTestCase extends \PHPUnit_Framework_TestCase
+abstract class BaseTestCase extends \PHPUnit_Framework_TestCase
 {
     /**
      * Allow accessibility to protected/private methods to allow testing them.
