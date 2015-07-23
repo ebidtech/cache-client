@@ -50,7 +50,7 @@ abstract class BaseProviderService implements ProviderServiceInterface
     {
         /* Validate the key. */
         if (! $this->getValidator()
-            ->requiredStringNotEmpty($key, __METHOD__, 'key')
+            ->isRequiredStringNotEmpty($key)
         ) {
             return new CacheResponse(
                 false,
@@ -72,11 +72,11 @@ abstract class BaseProviderService implements ProviderServiceInterface
         /* Validate parameters. */
         switch (false) {
             case $this->getValidator()
-                ->requiredStringNotEmpty($key, __METHOD__, 'key'):
+                ->isRequiredStringNotEmpty($key):
             case $this->getValidator()
-                ->requiredString($value, __METHOD__, 'value'):
+                ->isRequiredString($value):
             case $this->getValidator()
-                ->optionalPositiveInteger($expiration, __METHOD__, 'expiration'):
+                ->isOptionalPositiveInteger($expiration):
                 return new CacheResponse(
                     false,
                     false,
@@ -96,7 +96,7 @@ abstract class BaseProviderService implements ProviderServiceInterface
     {
         /* Validate the key. */
         if (! $this->getValidator()
-            ->requiredStringNotEmpty($key, __METHOD__, 'key')
+            ->isRequiredStringNotEmpty($key)
         ) {
             return new CacheResponse(
                 false,
@@ -117,7 +117,7 @@ abstract class BaseProviderService implements ProviderServiceInterface
     {
         /* Validate the key. */
         if (! $this->getValidator()
-            ->requiredStringNotEmpty($namespace, __METHOD__, 'namespace')
+            ->isRequiredStringNotEmpty($namespace)
         ) {
             return new CacheResponse(
                 false,
