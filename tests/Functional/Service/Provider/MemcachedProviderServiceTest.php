@@ -8,11 +8,10 @@
  * @license    [EMAILBIDDING_URL_LICENSE_HERE]
  */
 
-namespace EBT\CacheClient\Tests\Functional\Model\Provider;
+namespace EBT\CacheClient\Tests\Functional\Service\Provider;
 
-use EBT\CacheClient\Model\Provider\MemcachedProvider;
-use EBT\CacheClient\Model\ProviderInterface;
-use EBT\CacheClient\Service\Factory\ProviderFactoryService;
+use EBT\CacheClient\Service\Provider\MemcachedProviderService;
+use EBT\CacheClient\Service\ProviderServiceInterface;
 
 /**
  * This test requires an active memcached server, running on port 11211 of localhost.
@@ -24,7 +23,7 @@ use EBT\CacheClient\Service\Factory\ProviderFactoryService;
  * @group external
  * @group external-memcached
  */
-class MemcachedProviderTest extends BaseProviderTest
+class MemcachedProviderServiceTest extends BaseProviderServiceTest
 {
     /**
      * @var \Memcached
@@ -32,7 +31,7 @@ class MemcachedProviderTest extends BaseProviderTest
     protected $client;
 
     /**
-     * @var ProviderInterface
+     * @var ProviderServiceInterface
      */
     protected $provider;
 
@@ -52,10 +51,10 @@ class MemcachedProviderTest extends BaseProviderTest
 
         /* Create the provider instance. */
         $options = array(
-            ProviderInterface::PROVIDER_OPT_PREFIX    => 'my_prefix',
-            ProviderInterface::PROVIDER_OPT_SEPARATOR => ':',
+            ProviderServiceInterface::PROVIDER_OPT_PREFIX    => 'my_prefix',
+            ProviderServiceInterface::PROVIDER_OPT_SEPARATOR => ':',
         );
-        $this->provider = (new ProviderFactoryService())->getMemcached($this->client, $options);
+        $this->provider = new MemcachedProviderService($this->client, $options);
     }
 
     /**

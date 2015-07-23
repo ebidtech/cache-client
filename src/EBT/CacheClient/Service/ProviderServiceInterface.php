@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace EBT\CacheClient\Model;
+namespace EBT\CacheClient\Service;
 
 use EBT\CacheClient\Entity\CacheResponse;
 
@@ -19,7 +19,7 @@ use EBT\CacheClient\Entity\CacheResponse;
  * Defines methods that all cache providers should implement. The default response on failure
  * should always be false.
  */
-interface ProviderInterface
+interface ProviderServiceInterface
 {
     /* Cache provider options. */
     const PROVIDER_OPT_PREFIX         = 'prefix';

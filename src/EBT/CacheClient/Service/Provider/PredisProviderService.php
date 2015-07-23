@@ -9,11 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace EBT\CacheClient\Model\Provider;
+namespace EBT\CacheClient\Service\Provider;
 
 use Predis\ClientInterface;
 
-class PredisProvider extends BaseProvider
+class PredisProviderService extends BaseProviderService
 {
     /**
      * @const string
@@ -28,13 +28,17 @@ class PredisProvider extends BaseProvider
     /**
      * Constructor.
      *
-     * @param ClientInterface $client Predis client instance.
+     * @param ClientInterface $client  Predis client instance.
+     * @param array           $options Provider options.
      */
-    public function __construct(ClientInterface $client)
+    public function __construct(ClientInterface $client, array $options = array())
     {
         parent::__construct();
 
         $this->client = $client;
+
+        /* Set the provider options. */
+        $this->setOptions($options);
     }
 
     /**
@@ -48,7 +52,7 @@ class PredisProvider extends BaseProvider
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function doGet($key, array $options = array())
     {
@@ -57,7 +61,7 @@ class PredisProvider extends BaseProvider
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function doSet($key, $value, $expiration, array $options = array())
     {
@@ -66,7 +70,7 @@ class PredisProvider extends BaseProvider
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function doDelete($key, array $options = array())
     {
@@ -75,7 +79,7 @@ class PredisProvider extends BaseProvider
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected function doFlush($namespace)
     {

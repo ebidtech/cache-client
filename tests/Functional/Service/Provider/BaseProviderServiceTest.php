@@ -8,12 +8,12 @@
  * @license    [EMAILBIDDING_URL_LICENSE_HERE]
  */
 
-namespace EBT\CacheClient\Tests\Functional\Model\Provider;
+namespace EBT\CacheClient\Tests\Functional\Service\Provider;
 
-use EBT\CacheClient\Model\ProviderInterface;
+use EBT\CacheClient\Service\ProviderServiceInterface;
 use EBT\CacheClient\Tests\BaseFunctionalTestCase;
 
-abstract class BaseProviderTest extends BaseFunctionalTestCase
+abstract class BaseProviderServiceTest extends BaseFunctionalTestCase
 {
     /**
      * Tests if a key can be successfully retrieved from the cache with a simple key.
@@ -30,7 +30,7 @@ abstract class BaseProviderTest extends BaseFunctionalTestCase
     /**
      * Retrieves the provider being tested.
      *
-     * @return ProviderInterface
+     * @return ProviderServiceInterface
      */
     abstract protected function getProvider();
 
@@ -39,7 +39,7 @@ abstract class BaseProviderTest extends BaseFunctionalTestCase
      */
     public function testSetGetNamespacedKeySuccess()
     {
-        $options = array(ProviderInterface::CMD_OPT_NAMESPACE => 'my_namespace');
+        $options = array(ProviderServiceInterface::CMD_OPT_NAMESPACE => 'my_namespace');
         $this->getProvider()->set('my_second_key', 'my_second_value', null, $options);
         $result    = $this->getProvider()->get('my_second_key', $options);
         $namespace = $this->getProvider()->get('my_namespace');
@@ -105,8 +105,8 @@ abstract class BaseProviderTest extends BaseFunctionalTestCase
     {
         /* Namespace expires after 1 second, but the does not. However, the key should not be accessible. */
         $options = array(
-            ProviderInterface::CMD_OPT_NAMESPACE            => 'my_namespace',
-            ProviderInterface::CMD_OPT_NAMESPACE_EXPIRATION => 1,
+            ProviderServiceInterface::CMD_OPT_NAMESPACE            => 'my_namespace',
+            ProviderServiceInterface::CMD_OPT_NAMESPACE_EXPIRATION => 1,
         );
         $this->getProvider()->set('my_key', 'my_value', null, $options);
 
@@ -163,7 +163,7 @@ abstract class BaseProviderTest extends BaseFunctionalTestCase
      */
     public function testFlushSuccess()
     {
-        $options = array(ProviderInterface::CMD_OPT_NAMESPACE => 'my_namespace');
+        $options = array(ProviderServiceInterface::CMD_OPT_NAMESPACE => 'my_namespace');
         $this->getProvider()->set('my_key', 'my_value', null, $options);
         $flushResult = $this->getProvider()->flush('my_namespace');
         $getResult   = $this->getProvider()->get('my_key');

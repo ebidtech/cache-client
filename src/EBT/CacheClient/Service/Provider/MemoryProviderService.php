@@ -9,13 +9,13 @@
  * file that was distributed with this source code.
  */
 
-namespace EBT\CacheClient\Model\Provider;
+namespace EBT\CacheClient\Service\Provider;
 
 use EBT\CacheClient\Entity\CacheResponse;
-use EBT\CacheClient\Model\ProviderInterface;
+use EBT\CacheClient\Service\ProviderServiceInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class MemoryProvider extends BaseProvider
+class MemoryProviderService extends BaseProviderService
 {
     /**
      * @const string
@@ -48,6 +48,19 @@ class MemoryProvider extends BaseProvider
     protected $memory = array();
 
     /**
+     * Constructor.
+     *
+     * @param array $options Provider options.
+     */
+    public function __construct(array $options = array())
+    {
+        parent::__construct();
+
+        /* Set the provider options. */
+        $this->setOptions($options);
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function doGet($key, array $options = array())
@@ -78,7 +91,6 @@ class MemoryProvider extends BaseProvider
         );
 
         /* Currently we have no reason for this to fail. */
-
         return new CacheResponse(true, true, true);
     }
 
@@ -108,6 +120,62 @@ class MemoryProvider extends BaseProvider
     protected function doFlush($namespace)
     {
         return $this->delete($namespace);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getProviderName()
+    {
+        return self::PROVIDER_NAME;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setOptions(array $options)
+    {
+        $options = parent::setOptions($options);
+
+        /* Set provider specific options. */
+        $this->gcProbability =
+            (float) $options[ProviderServiceInterface::PROVIDER_OPT_GC_PROBABILITY] /
+            (float) $options[ProviderServiceInterface::PROVIDER_OPT_GC_DIVISOR];
+
+        return $options;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function configureProviderOptions(OptionsResolver $optionsResolver)
+    {
+        /* Parent options still apply. */
+        parent::configureProviderOptions($optionsResolver);
+
+        /* Define default values. */
+        $optionsResolver->setDefault(ProviderServiceInterface::PROVIDER_OPT_GC_PROBABILITY, 1);
+        $optionsResolver->setDefault(ProviderServiceInterface::PROVIDER_OPT_GC_DIVISOR, 100);
+
+        /* Add allowed types. */
+        $optionsResolver->setAllowedTypes(ProviderServiceInterface::PROVIDER_OPT_GC_PROBABILITY, 'int');
+        $optionsResolver->setAllowedTypes(ProviderServiceInterface::PROVIDER_OPT_GC_DIVISOR, 'int');
+
+        /* Set allowed values. */
+        $optionsResolver->setAllowedValues(
+            ProviderServiceInterface::PROVIDER_OPT_GC_PROBABILITY,
+            function ($value) {
+
+                return 0 <= $value;
+            }
+        );
+        $optionsResolver->setAllowedValues(
+            ProviderServiceInterface::PROVIDER_OPT_GC_DIVISOR,
+            function ($value) {
+
+                return 1 <= $value;
+            }
+        );
     }
 
     /**
@@ -178,59 +246,5 @@ class MemoryProvider extends BaseProvider
         return is_int($expiration)
             ? time() + $expiration
             : null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getProviderName()
-    {
-        return self::PROVIDER_NAME;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setOptions(array $options)
-    {
-        parent::setOptions($options);
-
-        /* Set provider specific options. */
-        $this->gcProbability =
-            (float) $options[ProviderInterface::PROVIDER_OPT_GC_PROBABILITY] /
-            (float) $options[ProviderInterface::PROVIDER_OPT_GC_DIVISOR];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configureProviderOptions(OptionsResolver $optionsResolver)
-    {
-        /* Parent options still apply. */
-        parent::configureProviderOptions($optionsResolver);
-
-        /* Define default values. */
-        $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_GC_PROBABILITY, 1);
-        $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_GC_DIVISOR, 100);
-
-        /* Add allowed types. */
-        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_GC_PROBABILITY, 'int');
-        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_GC_DIVISOR, 'int');
-
-        /* Set allowed values. */
-        $optionsResolver->setAllowedValues(
-            ProviderInterface::PROVIDER_OPT_GC_PROBABILITY,
-            function ($value) {
-
-                return 0 <= $value;
-            }
-        );
-        $optionsResolver->setAllowedValues(
-            ProviderInterface::PROVIDER_OPT_GC_DIVISOR,
-            function ($value) {
-
-                return 1 <= $value;
-            }
-        );
     }
 }

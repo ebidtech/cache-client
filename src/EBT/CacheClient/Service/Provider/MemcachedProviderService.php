@@ -9,11 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace EBT\CacheClient\Model\Provider;
+namespace EBT\CacheClient\Service\Provider;
 
 use EBT\CacheClient\Entity\CacheResponse;
 
-class MemcachedProvider extends BaseProvider
+class MemcachedProviderService extends BaseProviderService
 {
     /**
      * @const string
@@ -28,13 +28,16 @@ class MemcachedProvider extends BaseProvider
     /**
      * Constructor.
      *
-     * @param \Memcached $client Client instance.
+     * @param \Memcached $client  Client instance.
+     * @param array      $options Provider options.
      */
-    public function __construct(\Memcached $client)
+    public function __construct(\Memcached $client, array $options = array())
     {
         parent::__construct();
-
         $this->client = $client;
+
+        /* Set the provider options. */
+        $this->setOptions($options);
     }
 
     /**
@@ -111,7 +114,8 @@ class MemcachedProvider extends BaseProvider
      */
     protected function getResultCode()
     {
-        return $this->getClient()->getResultCode();
+        return $this->getClient()
+            ->getResultCode();
     }
 
     /**
@@ -151,7 +155,8 @@ class MemcachedProvider extends BaseProvider
      */
     protected function isBinaryProtocolActive()
     {
-        return (bool) $this->getClient()->getOption(\Memcached::OPT_BINARY_PROTOCOL);
+        return (bool) $this->getClient()
+            ->getOption(\Memcached::OPT_BINARY_PROTOCOL);
     }
 
     /**

@@ -9,16 +9,16 @@
  * file that was distributed with this source code.
  */
 
-namespace EBT\CacheClient\Model\Provider;
+namespace EBT\CacheClient\Service\Provider;
 
 use EBT\CacheClient\Entity\CacheResponse;
 use EBT\CacheClient\Exception\InvalidArgumentException;
-use EBT\CacheClient\Model\ProviderInterface;
+use EBT\CacheClient\Service\ProviderServiceInterface;
 use EBT\Validator\Service\Validator\ValidatorService;
 use EBT\Validator\Service\ValidatorServiceInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-abstract class BaseProvider implements ProviderInterface
+abstract class BaseProviderService implements ProviderServiceInterface
 {
     /**
      * @var string
@@ -49,8 +49,16 @@ abstract class BaseProvider implements ProviderInterface
     public function get($key, array $options = array())
     {
         /* Validate the key. */
-        if (! $this->getValidator()->requiredStringNotEmpty($key, __METHOD__, 'key')) {
-            return new CacheResponse(false, false, true, $this->getValidator()->getLastError());
+        if (! $this->getValidator()
+            ->requiredStringNotEmpty($key, __METHOD__, 'key')
+        ) {
+            return new CacheResponse(
+                false,
+                false,
+                true,
+                $this->getValidator()
+                    ->getLastError()
+            );
         }
 
         return $this->doGet($key, $options);
@@ -63,10 +71,19 @@ abstract class BaseProvider implements ProviderInterface
     {
         /* Validate parameters. */
         switch (false) {
-            case $this->getValidator()->requiredStringNotEmpty($key, __METHOD__, 'key'):
-            case $this->getValidator()->requiredString($value, __METHOD__, 'value'):
-            case $this->getValidator()->optionalPositiveInteger($expiration, __METHOD__, 'expiration'):
-                return new CacheResponse(false, false, true, $this->getValidator()->getLastError());
+            case $this->getValidator()
+                ->requiredStringNotEmpty($key, __METHOD__, 'key'):
+            case $this->getValidator()
+                ->requiredString($value, __METHOD__, 'value'):
+            case $this->getValidator()
+                ->optionalPositiveInteger($expiration, __METHOD__, 'expiration'):
+                return new CacheResponse(
+                    false,
+                    false,
+                    true,
+                    $this->getValidator()
+                        ->getLastError()
+                );
         }
 
         return $this->doSet($key, $value, $expiration, $options);
@@ -78,8 +95,16 @@ abstract class BaseProvider implements ProviderInterface
     public function delete($key, array $options = array())
     {
         /* Validate the key. */
-        if (! $this->getValidator()->requiredStringNotEmpty($key, __METHOD__, 'key')) {
-            return new CacheResponse(false, false, true, $this->getValidator()->getLastError());
+        if (! $this->getValidator()
+            ->requiredStringNotEmpty($key, __METHOD__, 'key')
+        ) {
+            return new CacheResponse(
+                false,
+                false,
+                true,
+                $this->getValidator()
+                    ->getLastError()
+            );
         }
 
         return $this->doDelete($key, $options);
@@ -91,75 +116,37 @@ abstract class BaseProvider implements ProviderInterface
     public function flush($namespace)
     {
         /* Validate the key. */
-        if (! $this->getValidator()->requiredStringNotEmpty($namespace, __METHOD__, 'namespace')) {
-            return new CacheResponse(false, false, true, $this->getValidator()->getLastError());
+        if (! $this->getValidator()
+            ->requiredStringNotEmpty($namespace, __METHOD__, 'namespace')
+        ) {
+            return new CacheResponse(
+                false,
+                false,
+                true,
+                $this->getValidator()
+                    ->getLastError()
+            );
         }
 
         return $this->doFlush($namespace);
     }
 
     /**
-     * Sets the default prefix and separator for the provider.
-     *
-     * @param array $options Provider configuration options.
-     */
-    public function setProviderOptions(array $options)
-    {
-        /* Validate options. */
-        $optionsResolver = new OptionsResolver();
-        $this->configureProviderOptions($optionsResolver);
-        $options = $this->resolveOptions($optionsResolver, $options);
-
-        $this->setOptions($options);
-    }
-
-    /**
      * Configures the provider with a pre resolved array of values.
      *
-     * @param array $options Resolved options.
-     */
-    protected function setOptions(array $options)
-    {
-        /* Set key prefix and separator. */
-        $this->separator = $options[ProviderInterface::PROVIDER_OPT_SEPARATOR];
-        $this->prefix    = $options[ProviderInterface::PROVIDER_OPT_PREFIX];
-
-        /* Add separator to the end of the default prefix if applicable. */
-        if (! empty($this->prefix)) {
-            $this->prefix .= $this->separator;
-        }
-    }
-
-    /**
-     * Configures provider specific options.
-     *
-     * @param OptionsResolver $optionsResolver Options resolver instance.
-     *
-     * @return OptionsResolver
-     */
-    protected function configureProviderOptions(OptionsResolver $optionsResolver)
-    {
-        /* Set default values. */
-        $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_PREFIX, '');
-        $optionsResolver->setDefault(ProviderInterface::PROVIDER_OPT_SEPARATOR, '');
-
-        /* Set allowed types. */
-        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_PREFIX, 'string');
-        $optionsResolver->setAllowedTypes(ProviderInterface::PROVIDER_OPT_SEPARATOR, 'string');
-    }
-
-    /**
-     * Resolves and validates a set of options.
-     *
-     * @param OptionsResolver $optionsResolver
-     * @param array           $options
+     * @param array $options Options.
      *
      * @returns array An array containing the resolved and validated options.
      *
      * @throws InvalidArgumentException
      */
-    protected function resolveOptions(OptionsResolver $optionsResolver, array $options)
+    protected function setOptions(array $options)
     {
+        /* Configure the options resolver. */
+        $optionsResolver = new OptionsResolver();
+        $this->configureProviderOptions($optionsResolver);
+
+        /* Resolve the options. */
         try {
             $options = $optionsResolver->resolve($options);
         } catch (\Exception $e) {
@@ -172,7 +159,34 @@ abstract class BaseProvider implements ProviderInterface
             );
         }
 
+        /* Set key prefix and separator. */
+        $this->separator = $options[ProviderServiceInterface::PROVIDER_OPT_SEPARATOR];
+        $this->prefix    = $options[ProviderServiceInterface::PROVIDER_OPT_PREFIX];
+
+        /* Add separator to the end of the default prefix if applicable. */
+        if (! empty($this->prefix)) {
+            $this->prefix .= $this->separator;
+        }
+
         return $options;
+    }
+
+    /**
+     * Configures provider specific options.
+     *
+     * @param OptionsResolver $optionsResolver Options resolver instance.
+     *
+     * @return OptionsResolver
+     */
+    protected function configureProviderOptions(OptionsResolver $optionsResolver)
+    {
+        /* Set default values. */
+        $optionsResolver->setDefault(ProviderServiceInterface::PROVIDER_OPT_PREFIX, '');
+        $optionsResolver->setDefault(ProviderServiceInterface::PROVIDER_OPT_SEPARATOR, '');
+
+        /* Set allowed types. */
+        $optionsResolver->setAllowedTypes(ProviderServiceInterface::PROVIDER_OPT_PREFIX, 'string');
+        $optionsResolver->setAllowedTypes(ProviderServiceInterface::PROVIDER_OPT_SEPARATOR, 'string');
     }
 
     /**
@@ -186,9 +200,9 @@ abstract class BaseProvider implements ProviderInterface
     protected function getKey($key, array $options)
     {
         /* Fetch additional options. */
-        $namespace = $this->getArrayValueOrDefault($options[ProviderInterface::CMD_OPT_NAMESPACE]);
+        $namespace           = $this->getArrayValueOrDefault($options[ProviderServiceInterface::CMD_OPT_NAMESPACE]);
         $namespaceExpiration = $this->getArrayValueOrDefault(
-            $options[ProviderInterface::CMD_OPT_NAMESPACE_EXPIRATION]
+            $options[ProviderServiceInterface::CMD_OPT_NAMESPACE_EXPIRATION]
         );
 
         /* No namespace used, simple key generation. */
@@ -198,7 +212,8 @@ abstract class BaseProvider implements ProviderInterface
         }
 
         /* Fetch the namespace version. */
-        $namespaceVersion = $this->get($namespace)->getResult();
+        $namespaceVersion = $this->get($namespace)
+            ->getResult();
 
         /* If the namespace version is not set, generate a new one and set it. */
         if (! $namespaceVersion) {
@@ -207,6 +222,7 @@ abstract class BaseProvider implements ProviderInterface
         }
 
         /* Create and return the complete key. */
+
         return sprintf(
             '%s%s%s%s%s%s',
             $this->prefix,
@@ -225,7 +241,7 @@ abstract class BaseProvider implements ProviderInterface
      */
     protected function generateNamespaceVersion()
     {
-        return (int)round(microtime(true) * 1000);
+        return (int) round(microtime(true) * 1000);
     }
 
     /**

@@ -9,23 +9,28 @@
  * file that was distributed with this source code.
  */
 
-namespace EBT\CacheClient\Tests\Unit\Model\Provider;
+namespace EBT\CacheClient\Tests\Unit\Service\Provider;
 
 use EBT\CacheClient\Entity\CacheResponse;
-use EBT\CacheClient\Model\Provider\BaseProvider;
-use EBT\CacheClient\Model\ProviderInterface;
+use EBT\CacheClient\Service\Provider\BaseProviderService;
+use EBT\CacheClient\Service\ProviderServiceInterface;
 use EBT\CacheClient\Tests\BaseUnitTestCase;
 
 /**
  * @group unit
  * @group unit-provider
  */
-class BaseProviderTest extends BaseUnitTestCase
+class BaseProviderServiceTest extends BaseUnitTestCase
 {
     /**
-     * @var BaseProvider|\PHPUnit_Framework_MockObject_MockObject
+     * @var BaseProviderService|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $baseProvider;
+
+    /**
+     * @var \ReflectionMethod
+     */
+    protected $setOptionsMethod;
 
     /**
      * Tests if the provider options are correctly set.
@@ -37,35 +42,38 @@ class BaseProviderTest extends BaseUnitTestCase
         $separator = $this->getPropertyUsingReflection($this->baseProvider, 'separator');
 
         /* Both are not defined. */
-        $this->baseProvider->setProviderOptions(array());
+        $this->setOptionsMethod->invoke($this->baseProvider, array());
         $this->assertEquals('', $prefix->getValue($this->baseProvider));
         $this->assertEquals('', $separator->getValue($this->baseProvider));
 
         /* Prefix is empty/null, but separator is not. */
-        $this->baseProvider->setProviderOptions(
+        $this->setOptionsMethod->invoke(
+            $this->baseProvider,
             array(
-                ProviderInterface::PROVIDER_OPT_PREFIX    => '',
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => ':',
+                ProviderServiceInterface::PROVIDER_OPT_PREFIX    => '',
+                ProviderServiceInterface::PROVIDER_OPT_SEPARATOR => ':',
             )
         );
         $this->assertEquals('', $prefix->getValue($this->baseProvider));
         $this->assertEquals(':', $separator->getValue($this->baseProvider));
 
         /* Prefix has value but separator not. */
-        $this->baseProvider->setProviderOptions(
+        $this->setOptionsMethod->invoke(
+            $this->baseProvider,
             array(
-                ProviderInterface::PROVIDER_OPT_PREFIX    => 'prefix',
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => '',
+                ProviderServiceInterface::PROVIDER_OPT_PREFIX    => 'prefix',
+                ProviderServiceInterface::PROVIDER_OPT_SEPARATOR => '',
             )
         );
         $this->assertEquals('prefix', $prefix->getValue($this->baseProvider));
         $this->assertEquals('', $separator->getValue($this->baseProvider));
 
         /* Both have value. */
-        $this->baseProvider->setProviderOptions(
+        $this->setOptionsMethod->invoke(
+            $this->baseProvider,
             array(
-                ProviderInterface::PROVIDER_OPT_PREFIX    => 'prefix',
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => ':',
+                ProviderServiceInterface::PROVIDER_OPT_PREFIX    => 'prefix',
+                ProviderServiceInterface::PROVIDER_OPT_SEPARATOR => ':',
             )
         );
         $this->assertEquals('prefix:', $prefix->getValue($this->baseProvider));
@@ -99,7 +107,7 @@ class BaseProviderTest extends BaseUnitTestCase
 
         /* Call method. */
         $options = array(
-            ProviderInterface::CMD_OPT_NAMESPACE => 'my_ns',
+            ProviderServiceInterface::CMD_OPT_NAMESPACE => 'my_ns',
         );
         $this->assertEquals(
             'prefix:my_ns:12345:my_key',
@@ -127,8 +135,8 @@ class BaseProviderTest extends BaseUnitTestCase
 
         /* Call method. */
         $options = array(
-            ProviderInterface::CMD_OPT_NAMESPACE            => 'my_ns',
-            ProviderInterface::CMD_OPT_NAMESPACE_EXPIRATION => 30,
+            ProviderServiceInterface::CMD_OPT_NAMESPACE            => 'my_ns',
+            ProviderServiceInterface::CMD_OPT_NAMESPACE_EXPIRATION => 30,
         );
         $this->assertRegExp(
             '/^prefix:my_ns:[1-9][0-9]*:my_key$/',
@@ -144,14 +152,14 @@ class BaseProviderTest extends BaseUnitTestCase
         parent::setUp();
 
         /* Create a mock for the abstract class. */
-        $this->baseProvider = $this->getMockForAbstractClass('EBT\CacheClient\Model\Provider\BaseProvider');
+        $this->baseProvider = $this->getMockForAbstractClass('EBT\CacheClient\Service\Provider\BaseProviderService');
 
-        /* Setup default provider options. */
-        $this->baseProvider->setProviderOptions(
-            array(
-                ProviderInterface::PROVIDER_OPT_PREFIX    => 'prefix',
-                ProviderInterface::PROVIDER_OPT_SEPARATOR => ':',
-            )
+        $this->setOptionsMethod = $this->getMethodUsingReflection($this->baseProvider, 'setOptions');
+        $this->setOptionsMethod->setAccessible(true);
+        $options = array(
+            ProviderServiceInterface::PROVIDER_OPT_PREFIX    => 'prefix',
+            ProviderServiceInterface::PROVIDER_OPT_SEPARATOR => ':',
         );
+        $this->setOptionsMethod->invoke($this->baseProvider, $options);
     }
 }

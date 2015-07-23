@@ -8,19 +8,19 @@
  * @license    [EMAILBIDDING_URL_LICENSE_HERE]
  */
 
-namespace EBT\CacheClient\Tests\Functional\Model\Provider;
+namespace EBT\CacheClient\Tests\Functional\Service\Provider;
 
-use EBT\CacheClient\Model\ProviderInterface;
-use EBT\CacheClient\Service\Factory\ProviderFactoryService;
+use EBT\CacheClient\Service\Provider\MemoryProviderService;
+use EBT\CacheClient\Service\ProviderServiceInterface;
 
 /**
  * @group functional
  * @group functional-provider
  */
-class MemoryProviderTest extends BaseProviderTest
+class MemoryProviderServiceTest extends BaseProviderServiceTest
 {
     /**
-     * @var ProviderInterface
+     * @var ProviderServiceInterface
      */
     protected $provider;
 
@@ -33,10 +33,10 @@ class MemoryProviderTest extends BaseProviderTest
 
         /* Create the provider instance. */
         $options = array(
-            ProviderInterface::PROVIDER_OPT_PREFIX    => 'my_prefix',
-            ProviderInterface::PROVIDER_OPT_SEPARATOR => ':',
+            ProviderServiceInterface::PROVIDER_OPT_PREFIX    => 'my_prefix',
+            ProviderServiceInterface::PROVIDER_OPT_SEPARATOR => ':',
         );
-        $this->provider = (new ProviderFactoryService())->getMemory($options);
+        $this->provider = new MemoryProviderService($options);
     }
 
     /**
