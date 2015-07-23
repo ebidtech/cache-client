@@ -35,8 +35,7 @@ require 'vendor/autoload.php';
 
 ```php
 // Create the provider instance (Predis for example).
-$factory = new ProviderFactoryService();
-$cache = $factory->getPredis($predisClient, $options);
+$cache = new PredisProviderService($predisClient, $options);
 
 // Set and get cached values.
 $cache->set('my_key', 'my_value'); // CacheResponse(true, true, true, null)
