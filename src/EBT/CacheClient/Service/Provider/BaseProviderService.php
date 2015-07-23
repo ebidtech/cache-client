@@ -270,7 +270,7 @@ abstract class BaseProviderService implements ProviderServiceInterface
     /**
      * Fetches the value stored under a given key.
      *
-     * @see ProviderInterface::get
+     * @see ProviderServiceInterface::get
      *
      * @param string $key     The key to fetch.
      * @param array  $options Additional options.
@@ -282,7 +282,7 @@ abstract class BaseProviderService implements ProviderServiceInterface
     /**
      * Sets a new value in the cache.
      *
-     * @see ProviderInterface::set
+     * @see ProviderServiceInterface::set
      *
      * @param string       $key        Key to set.
      * @param string       $value      Value to set.
@@ -296,7 +296,7 @@ abstract class BaseProviderService implements ProviderServiceInterface
     /**
      * Deletes a single key.
      *
-     * @see ProviderInterface::delete
+     * @see ProviderServiceInterface::delete
      *
      * @param string $key     Key to delete.
      * @param array  $options Additional options.
@@ -309,7 +309,7 @@ abstract class BaseProviderService implements ProviderServiceInterface
      * Deletes all cached keys in a namespace. This operation is not guaranteed to delete the affected
      * keys, it only ensures a "logical delete" (those keys are no longer accessible within the namespace).
      *
-     * @see ProviderInterface::flush
+     * @see ProviderServiceInterface::flush
      *
      * @param string $namespace
      *

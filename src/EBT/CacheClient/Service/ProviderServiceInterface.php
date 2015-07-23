@@ -14,7 +14,7 @@ namespace EBT\CacheClient\Service;
 use EBT\CacheClient\Entity\CacheResponse;
 
 /**
- * Interface EBT\CacheClient\Model\ProviderInterface
+ * Interface EBT\CacheClient\Service\ProviderServiceInterface
  *
  * Defines methods that all cache providers should implement. The default response on failure
  * should always be false.
