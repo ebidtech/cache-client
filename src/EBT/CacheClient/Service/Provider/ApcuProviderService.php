@@ -18,19 +18,6 @@ class ApcuProviderService extends BaseProviderService
     const PROVIDER_NAME = 'Apcu';
 
     /**
-     * Constructor.
-     *
-     * @param array $options Provider options.
-     */
-    public function __construct(array $options = array())
-    {
-        parent::__construct();
-
-        /* Set the provider options. */
-        $this->setOptions($options);
-    }
-
-    /**
      * Returns the name of the provider.
      *
      * @return string
