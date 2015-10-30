@@ -102,7 +102,7 @@ class MemcachedProviderService extends BaseProviderService
         if ($this->isBinaryProtocolActive()) {
             $result = $this->client->increment($key, $increment, $initialValue, $expiration);
 
-            return new CacheResponse($result, true, true);
+            return new CacheResponse($result, $this->isSuccess(), ($this->isSuccess() || $this->isNotFound()));
         }
 
         /* If the binary protocol is disable we must implement the initial value logic. */
@@ -130,7 +130,7 @@ class MemcachedProviderService extends BaseProviderService
         if ($this->isNotStored()) {
             $result = $this->client->increment($key, $increment);
 
-            return new CacheResponse($result, true, true);
+            return new CacheResponse($result, $this->isSuccess(), ($this->isSuccess() || $this->isNotFound()));
         }
 
         return new CacheResponse($result, false, false);

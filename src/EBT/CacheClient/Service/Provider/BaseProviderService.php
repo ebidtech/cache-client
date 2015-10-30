@@ -122,7 +122,7 @@ abstract class BaseProviderService implements ProviderServiceInterface
             case $this->getValidator()
                 ->isRequiredPositiveInteger($increment):
             case $this->getValidator()
-                ->isRequiredPositiveInteger($initialValue):
+                ->isRequiredZeroPositiveInteger($initialValue):
             case $this->getValidator()
                 ->isOptionalPositiveInteger($expiration):
                 return new CacheResponse(
