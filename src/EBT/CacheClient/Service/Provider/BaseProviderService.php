@@ -113,6 +113,33 @@ abstract class BaseProviderService implements ProviderServiceInterface
     /**
      * {@inheritdoc}
      */
+    public function increment($key, $increment = 1, $initialValue = 0, $expiration = null, array $options = array())
+    {
+        /* Validate parameters. */
+        switch (false) {
+            case $this->getValidator()
+                ->isRequiredStringNotEmpty($key):
+            case $this->getValidator()
+                ->isRequiredPositiveInteger($increment):
+            case $this->getValidator()
+                ->isRequiredZeroPositiveInteger($initialValue):
+            case $this->getValidator()
+                ->isOptionalPositiveInteger($expiration):
+                return new CacheResponse(
+                    false,
+                    false,
+                    true,
+                    $this->getValidator()
+                        ->getLastError()
+                );
+        }
+
+        return $this->doIncrement($key, $increment, $initialValue, $expiration, $options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function flush($namespace)
     {
         /* Validate the key. */
@@ -304,6 +331,25 @@ abstract class BaseProviderService implements ProviderServiceInterface
      * @return CacheResponse
      */
     abstract protected function doDelete($key, array $options = array());
+
+    /**
+     * Increments a numeric value stored under the given key (creates the key if it does not exist).
+     *
+     * @param string       $key          The key to increment.
+     * @param integer      $increment    Value to increment.
+     * @param integer      $initialValue Initial value to set when the key does not exist.
+     * @param integer|null $expiration   Key TTL (only applies when the key is created).
+     * @param array        $options      Additional options.
+     *
+     * @return CacheResponse The new value when it is incremented, FALSE on failure.
+     */
+    abstract protected function doIncrement(
+        $key,
+        $increment = 1,
+        $initialValue = 0,
+        $expiration = null,
+        array $options = array()
+    );
 
     /**
      * Deletes all cached keys in a namespace. This operation is not guaranteed to delete the affected

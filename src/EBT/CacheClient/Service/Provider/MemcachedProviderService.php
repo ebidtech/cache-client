@@ -67,6 +67,7 @@ class MemcachedProviderService extends BaseProviderService
 
         /* Success should never fail, so anything other than success is also a server (connection) error. */
         if ($this->isSuccess()) {
+
             return new CacheResponse(true, true, true);
         }
 
@@ -89,6 +90,50 @@ class MemcachedProviderService extends BaseProviderService
 
         /* If everything failed we're dealing with a backend (connection) error. */
         return new CacheResponse(false, false, false, CacheResponse::CONNECTION_ERROR);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function doIncrement($key, $increment = 1, $initialValue = 0, $expiration = null, array $options = array())
+    {
+        $key = $this->getKey($key, $options);
+        /* Only the binary protocol supports initial value, in which case the implementation is simpler. */
+        if ($this->isBinaryProtocolActive()) {
+            $result = $this->client->increment($key, $increment, $initialValue, $expiration);
+
+            return new CacheResponse($result, $this->isSuccess(), ($this->isSuccess() || $this->isNotFound()));
+        }
+
+        /* If the binary protocol is disable we must implement the initial value logic. */
+        $result = $this->client->increment($key, $increment);
+
+        /* In case or success or any error aside "not found" there's nothing more to do. */
+        if ($this->isSuccess() || ! $this->isNotFound()) {
+
+            return new CacheResponse($result, true, true);
+        }
+
+        /**
+         * Try to add the key; notice that "add" is used instead of "set", to ensure we do not override
+         * the value in case another process already set it.
+         */
+        $result = $this->client->add($key, $increment + $initialValue, $expiration);
+
+        /* Created the key successfully. */
+        if ($this->isSuccess()) {
+
+            return new CacheResponse($increment + $initialValue, true, true);
+        }
+
+        /* The key was not stored because is already existed, try to increment a last time. */
+        if ($this->isNotStored()) {
+            $result = $this->client->increment($key, $increment);
+
+            return new CacheResponse($result, $this->isSuccess(), ($this->isSuccess() || $this->isNotFound()));
+        }
+
+        return new CacheResponse($result, false, false);
     }
 
     /**
