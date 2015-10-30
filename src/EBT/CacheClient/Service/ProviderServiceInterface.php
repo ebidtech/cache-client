@@ -64,6 +64,19 @@ interface ProviderServiceInterface
     public function delete($key, array $options = array());
 
     /**
+     * Increments a numeric value stored under the given key (creates the key if it does not exist).
+     *
+     * @param string       $key          The key to increment.
+     * @param integer      $increment    Value to increment.
+     * @param integer      $initialValue Initial value to set when the key does not exist.
+     * @param integer|null $expiration   Key TTL (only applies when the key is created).
+     * @param array        $options      Additional options.
+     *
+     * @return CacheResponse The new value when it is incremented, FALSE on failure.
+     */
+    public function increment($key, $increment = 1, $initialValue = 0, $expiration = null, array $options = array());
+
+    /**
      * Deletes all cached keys in a namespace. This operation is not guaranteed to delete the affected
      * keys, it only ensures a "logical delete" (those keys are no longer accessible within the namespace).
      *

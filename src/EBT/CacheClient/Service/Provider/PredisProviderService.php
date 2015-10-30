@@ -81,6 +81,20 @@ class PredisProviderService extends BaseProviderService
     /**
      * {@inheritDoc}
      */
+    protected function doIncrement(
+        $key,
+        $increment = 1,
+        $initialValue = 0,
+        $expiration = null,
+        array $options = array()
+    ) {
+        // TODO: Implement doFlush() method.
+        throw new \Exception('Method not implemented');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function doFlush($namespace)
     {
         // TODO: Implement doFlush() method.
