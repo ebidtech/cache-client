@@ -71,7 +71,7 @@ class ApcuProviderService extends BaseProviderService
         $expiration = null,
         array $options = array()
     ) {
-        // TODO: Implement doFlush() method.
+        // TODO: Implement doIncrement() method.
         throw new \Exception('Method not implemented');
     }
 
