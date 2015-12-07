@@ -49,15 +49,13 @@ abstract class BaseProviderService implements ProviderServiceInterface
     public function get($key, array $options = array())
     {
         /* Validate the key. */
-        if (! $this->getValidator()
-            ->isRequiredStringNotEmpty($key)
-        ) {
+        if (! $this->validator->isRequiredStringNotEmpty($key)) {
+
             return new CacheResponse(
                 false,
                 false,
                 true,
-                $this->getValidator()
-                    ->getLastError()
+                $this->validator->getLastError()
             );
         }
 
@@ -71,18 +69,14 @@ abstract class BaseProviderService implements ProviderServiceInterface
     {
         /* Validate parameters. */
         switch (false) {
-            case $this->getValidator()
-                ->isRequiredStringNotEmpty($key):
-            case $this->getValidator()
-                ->isRequiredString($value):
-            case $this->getValidator()
-                ->isOptionalPositiveInteger($expiration):
+            case $this->validator->isRequiredStringNotEmpty($key):
+            case $this->validator->isRequiredScalar($value):
+            case $this->validator->isOptionalPositiveInteger($expiration):
                 return new CacheResponse(
                     false,
                     false,
                     true,
-                    $this->getValidator()
-                        ->getLastError()
+                    $this->validator->getLastError()
                 );
         }
 
@@ -95,15 +89,13 @@ abstract class BaseProviderService implements ProviderServiceInterface
     public function delete($key, array $options = array())
     {
         /* Validate the key. */
-        if (! $this->getValidator()
-            ->isRequiredStringNotEmpty($key)
-        ) {
+        if (! $this->validator->isRequiredStringNotEmpty($key)) {
+
             return new CacheResponse(
                 false,
                 false,
                 true,
-                $this->getValidator()
-                    ->getLastError()
+                $this->validator->getLastError()
             );
         }
 
@@ -117,20 +109,15 @@ abstract class BaseProviderService implements ProviderServiceInterface
     {
         /* Validate parameters. */
         switch (false) {
-            case $this->getValidator()
-                ->isRequiredStringNotEmpty($key):
-            case $this->getValidator()
-                ->isRequiredPositiveInteger($increment):
-            case $this->getValidator()
-                ->isRequiredZeroPositiveInteger($initialValue):
-            case $this->getValidator()
-                ->isOptionalPositiveInteger($expiration):
+            case $this->validator->isRequiredStringNotEmpty($key):
+            case $this->validator->isRequiredPositiveInteger($increment):
+            case $this->validator->isRequiredZeroPositiveInteger($initialValue):
+            case $this->validator->isOptionalPositiveInteger($expiration):
                 return new CacheResponse(
                     false,
                     false,
                     true,
-                    $this->getValidator()
-                        ->getLastError()
+                    $this->validator->getLastError()
                 );
         }
 
@@ -143,15 +130,13 @@ abstract class BaseProviderService implements ProviderServiceInterface
     public function flush($namespace)
     {
         /* Validate the key. */
-        if (! $this->getValidator()
-            ->isRequiredStringNotEmpty($namespace)
-        ) {
+        if (! $this->validator->isRequiredStringNotEmpty($namespace)) {
+
             return new CacheResponse(
                 false,
                 false,
                 true,
-                $this->getValidator()
-                    ->getLastError()
+                $this->validator->getLastError()
             );
         }
 
@@ -312,7 +297,7 @@ abstract class BaseProviderService implements ProviderServiceInterface
      * @see ProviderServiceInterface::set
      *
      * @param string       $key        Key to set.
-     * @param string       $value      Value to set.
+     * @param mixed        $value      Value to set (any scalar value).
      * @param integer|null $expiration Key TTL.
      * @param array        $options    Additional options.
      *
