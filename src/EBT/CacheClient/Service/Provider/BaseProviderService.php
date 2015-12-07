@@ -296,10 +296,10 @@ abstract class BaseProviderService implements ProviderServiceInterface
      *
      * @see ProviderServiceInterface::set
      *
-     * @param string                $key        Key to set.
-     * @param string|int|float|bool $value      Value to set (any scalar value).
-     * @param integer|null          $expiration Key TTL.
-     * @param array                 $options    Additional options.
+     * @param string       $key        Key to set.
+     * @param mixed        $value      Value to set (any scalar value).
+     * @param integer|null $expiration Key TTL.
+     * @param array        $options    Additional options.
      *
      * @return CacheResponse
      */

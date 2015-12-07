@@ -22,13 +22,13 @@ use EBT\CacheClient\Entity\CacheResponse;
 interface ProviderServiceInterface
 {
     /* Cache provider options. */
-    const PROVIDER_OPT_PREFIX         = 'prefix';
-    const PROVIDER_OPT_SEPARATOR      = 'separator';
+    const PROVIDER_OPT_PREFIX = 'prefix';
+    const PROVIDER_OPT_SEPARATOR = 'separator';
     const PROVIDER_OPT_GC_PROBABILITY = 'gc_probability';
-    const PROVIDER_OPT_GC_DIVISOR     = 'gc_divisor';
+    const PROVIDER_OPT_GC_DIVISOR = 'gc_divisor';
 
     /* Cache command options. */
-    const CMD_OPT_NAMESPACE            = 'namespace';
+    const CMD_OPT_NAMESPACE = 'namespace';
     const CMD_OPT_NAMESPACE_EXPIRATION = 'namespace_expiration';
 
     /**
@@ -51,10 +51,10 @@ interface ProviderServiceInterface
      * If using third party providers is necessary, be sure to check the source code of both, and make the necessary
      * changes to ensure compatibility between any existing value encoding.
      *
-     * @param string                $key        Key to set.
-     * @param string|int|float|bool $value      Value to set (any scalar value).
-     * @param integer|null          $expiration Key TTL.
-     * @param array                 $options    Additional options.
+     * @param string       $key        Key to set.
+     * @param mixed        $value      Value to set (any scalar value).
+     * @param integer|null $expiration Key TTL.
+     * @param array        $options    Additional options.
      *
      * @return CacheResponse
      */
