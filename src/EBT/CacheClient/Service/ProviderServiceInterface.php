@@ -44,10 +44,17 @@ interface ProviderServiceInterface
     /**
      * Sets a new value in the cache.
      *
-     * @param string       $key        Key to set.
-     * @param string       $value      Value to set.
-     * @param integer|null $expiration Key TTL.
-     * @param array        $options    Additional options.
+     * Please note that different providers might have different ways of storing the given values, possibly applying
+     * transformations to those values. As such, you should not use these providers in together third party ones, as
+     * value representations might not be compatible between them.
+     *
+     * If using third party providers is necessary, be sure to check the source code of both, and make the necessary
+     * changes to ensure compatibility between any existing value encoding.
+     *
+     * @param string                $key        Key to set.
+     * @param string|int|float|bool $value      Value to set (any scalar value).
+     * @param integer|null          $expiration Key TTL.
+     * @param array                 $options    Additional options.
      *
      * @return CacheResponse
      */
